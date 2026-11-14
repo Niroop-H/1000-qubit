@@ -1,0 +1,61 @@
+name: Quantum Studio CI
+on:
+  push:
+    branches: [main, feat/20-qubit-simulator]
+  pull_request:
+    branches: [main]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Audit production dependencies against npm advisories
+        run: npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high
+      - run: npm test
+      - name: Check independent Python/TypeScript physics model parity
+        run: node scripts/verify_physics_parity.mjs
+      - run: npm run build:web
+      - name: Validate all workspace access policy regression tests
+        run: |
+          mkdir -p artifacts/access
+          npx --no-install esbuild apps/web/src/access/engine.ts --bundle --platform=node --format=cjs --outfile=artifacts/access/engine.js
+          ACCESS_TEST_BUILD="$PWD/artifacts/access" node --test apps/web/tests/access.test.cjs
+      - name: Test browser execution allowance and five-hour cooldown
+        run: |
+          npx --no-install esbuild apps/web/src/services/execution-budget-policy.ts --bundle --platform=node --format=cjs --outfile=artifacts/access/budget.js
+          BUDGET_TEST_BUILD="$PWD/artifacts/access" node --test apps/web/tests/budget.test.cjs
+      - name: Verify protected industrial API serverless entrypoints
+        run: node scripts/verify_industry_routes.mjs
+      - run: node scripts/verify-20.mjs
+      - run: node scripts/extended-validation.mjs
+      - run: node scripts/preannouncement_release_gate.mjs
+      - run: node scripts/verify_partitioned.mjs
+      - name: Install release browser test tooling
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install chromium
+      - run: node scripts/browser_release_gate.mjs
+      - run: python -m unittest discover -s backend -p 'test_*.py'
+      - name: Validate Python industrial customer SDK offline
+        run: python -m unittest discover -s sdk/python -p 'test_*.py'
+      - name: Save quantum validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quantum-20-validation
+          path: |
+            artifacts/quantum-20-validation.json
+            artifacts/extended-quantum-validation.json
+            artifacts/preannouncement-release-gate.json
+            artifacts/partitioned-independent-validation.json
+            artifacts/browser-release-gate.json
+            artifacts/industry-api-release-gate.json
+            artifacts/research-*.png
+            artifacts/industrial-optimization-desktop.png
+          if-no-files-found: ignore
