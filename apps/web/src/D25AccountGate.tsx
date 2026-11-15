@@ -21,7 +21,6 @@ export default function D25AccountGate({children}:{children:ReactNode}){
  const [notice,setNotice]=useState("");
  const [consent,setConsent]=useState(false);
  const [checkout,setCheckout]=useState("");
- const [verifiedNotice,setVerifiedNotice]=useState(false);
  const refreshAccount=useCallback(async()=>{
   const result=await billingRequest<AccountStatus>("GET","status");
   if(result.schema!=="D25-Account-Subscription/v1"||
@@ -166,7 +165,7 @@ export default function D25AccountGate({children}:{children:ReactNode}){
    Renewals can be cancelled; paid access continues through its covered period.
    Test payments do not collect real money.</p>
    <p className="d25-auth-note">Account: {user.email} · Subscription: {status?.subscriptionStatus||"not yet active"}</p>
-   {status?.paidThroughMs>0&&<p className="d25-auth-note">Previously paid through: {new Date(status.paidThroughMs).toLocaleDateString()}.</p>}
+   {status&&status.paidThroughMs>0&&<p className="d25-auth-note">Previously paid through: {new Date(status.paidThroughMs).toLocaleDateString()}.</p>}
    <label className="d25-auth-consent"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/>
     <span>I authorize a Razorpay TEST subscription of ₹500 per month for up to 12 billing cycles, with the option to cancel future renewals.</span></label>
    <button type="button" className="d25-auth-primary" disabled={working||!consent} onClick={startSubscription}>
