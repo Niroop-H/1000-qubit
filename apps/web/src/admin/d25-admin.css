@@ -1,0 +1,46 @@
+.d25-admin{min-height:100vh;background:radial-gradient(circle at 85% 0,#213449 0%,transparent 30%),#08111d;color:#edf3fb;padding:30px clamp(15px,3vw,52px);font-family:Inter,Segoe UI,sans-serif}
+.d25-admin button{cursor:pointer;border:1px solid #46617d;border-radius:9px;background:#162a3d;color:#f2d19a;padding:9px 12px;font-weight:600}
+.d25-admin button:hover:not(:disabled){border-color:#e5b873;background:#23364c}
+.d25-admin button:disabled{opacity:.45;cursor:not-allowed}
+.d25-admin h1{font-size:clamp(27px,3.5vw,45px);margin:10px 0}
+.d25-admin h1 span{color:#f1c886}.d25-admin h2{font-size:19px;margin:0 0 17px}
+.d25-overline{font-size:11px;color:#dfbf80;letter-spacing:2px;font-weight:800}
+.d25-admin-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid #364958;padding-bottom:22px;margin-bottom:24px}
+.d25-admin-header p{color:#9fb5c8;font-size:14px}
+.d25-admin-actions{display:flex;gap:9px;flex-wrap:wrap}
+.d25-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.d25-metrics article,.d25-admin-charts article,.d25-admin-section,.d25-admin-explanation{border:1px solid #2c4358;background:#0e2030;border-radius:14px;padding:19px}
+.d25-metrics article{display:flex;flex-direction:column;gap:14px}
+.d25-metrics small{color:#c3d1df;font-size:12px}.d25-metrics strong{font-size:clamp(25px,2.4vw,35px);color:#f3ce91}
+.d25-metrics em{font-size:11px;color:#8eacbf;font-style:normal}
+.d25-admin-charts{margin:16px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.d25-chart svg{display:block;width:100%;height:auto;max-height:300px}
+.d25-chart small{font-size:12px;color:#9cbbcd}
+.d25-admin-explanation p{font-size:12px;color:#a9bbc9;line-height:1.5;margin:6px 0}
+.d25-admin-explanation strong{color:#e4c58f}
+.d25-admin-section{margin:16px 0}
+.d25-admin-section-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px}
+.d25-admin-filters{display:flex;flex-wrap:wrap;gap:10px}
+.d25-admin-filters button[aria-pressed=true]{background:#c59c5a;color:#142333}
+.d25-admin-search{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin:22px 0}
+.d25-admin-search label{color:#acc1d0;font-size:12px;width:100%}
+.d25-admin-search input{min-width:220px;flex:1;background:#081625;border:1px solid #4b6681;border-radius:9px;color:white;padding:10px 12px;font:inherit}
+.d25-admin-table-scroll{width:100%;overflow-x:auto}
+.d25-admin table{border-collapse:collapse;min-width:800px;width:100%;font-size:13px}
+.d25-admin th{text-align:left;color:#d7b881;background:#182c3e}
+.d25-admin td,.d25-admin th{padding:13px 12px;border-bottom:1px solid #2c4155}
+.d25-admin td{vertical-align:top}
+.d25-admin td strong{display:block;font-size:13px}
+.d25-admin td small{display:block;color:#8caabf;margin-top:4px;max-width:230px;overflow-wrap:anywhere}
+.d25-state-active{color:#85e9af;font-weight:800}.d25-state-idle{color:#c9b49b}
+.d25-user-controls{display:flex;gap:6px;flex-wrap:wrap}
+.d25-user-controls button{font-size:12px;padding:7px 9px}
+.d25-pagination{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:17px;color:#9fb4c3;font-size:12px}
+.d25-admin-error,.d25-admin-success{padding:14px 16px;border-radius:8px;background:#432326;color:#ffd4d2}
+.d25-admin-success{background:#123a2c;color:#c3f3d7}
+.d25-admin-login{max-width:550px;margin:15vh auto;padding:35px;border:1px solid #896638;border-radius:17px;background:#112335;box-shadow:0 15px 80px #0008}
+.d25-admin-login h1{color:#f1cc89}.d25-admin-login p{color:#c4d0dc;line-height:1.6}.d25-admin-login small{color:#96afc3}
+.d25-google-login{min-height:55px;margin:25px 0}
+.d25-admin footer{font-size:11px;color:#91a8b9;border-top:1px solid #30475b;padding:22px 0;margin-top:28px}
+@media(max-width:1100px){.d25-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.d25-admin-charts{grid-template-columns:1fr}}
+@media(max-width:580px){.d25-metrics{grid-template-columns:1fr}.d25-admin{padding:17px 11px}.d25-admin-charts article{padding:9px}.d25-admin-login{margin:6vh auto;padding:21px}}

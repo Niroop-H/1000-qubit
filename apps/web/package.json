@@ -1,13 +1,15 @@
 {
   "name": "@mah-quantum/web",
   "version": "1.0.0",
-  "author": "Devashri S Quantum",
+  "author": "Devashri S Industries (a division of MAH Quantum)",
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && node scripts/routes.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:desktop": "tsc && vite build --config vite.desktop.config.ts && node ../../scripts/verify-commercial-bundle.mjs",
+    "dev:desktop": "vite --config vite.desktop.config.ts --port 3000"
   },
   "dependencies": {
     "lucide-react": "^0.395.0",

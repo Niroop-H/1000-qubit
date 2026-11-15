@@ -1,0 +1,17 @@
+{
+  "name": "d25-firebase-commerce",
+  "private": true,
+  "version": "0.1.0",
+  "description": "D25 Quantum Workspace Firebase Authentication and Razorpay recurring test subscriptions",
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.cjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.1",
+    "firebase-functions": "^7.4.0"
+  }
+}

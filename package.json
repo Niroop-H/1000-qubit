@@ -2,7 +2,7 @@
   "name": "mah-quantum-monorepo",
   "version": "1.0.0",
   "private": true,
-  "author": "Devashri S Quantum",
+  "author": "Devashri S Industries (a division of MAH Quantum)",
   "license": "UNLICENSED",
   "workspaces": [
     "apps/*"
@@ -12,6 +12,15 @@
     "dev:web": "npm run dev --workspace=apps/web",
     "build:engine": "npm run build --workspace=apps/engine",
     "build:web": "npm run build --workspace=apps/web",
-    "test": "npm run test --workspace=apps/engine"
+    "test": "npm run test --workspace=apps/engine",
+    "desktop:icons": "npx --yes @tauri-apps/cli@2.12.4 icon assets/d25-desktop-icon.svg",
+    "desktop:dev": "npx --yes @tauri-apps/cli@2.12.4 dev",
+    "desktop:build": "npx --yes @tauri-apps/cli@2.12.4 build --bundles nsis,msi",
+    "build:private-engine": "node scripts/build-private-engine.mjs",
+    "build:desktop": "npm run build:desktop --workspace=apps/web",
+    "dev:desktop": "npm run dev:desktop --workspace=apps/web",
+    "verify:commercial": "node scripts/verify-commercial-bundle.mjs",
+    "desktop:build:connected": "node scripts/check-d25-release-config.mjs && npm run desktop:build",
+    "test:license": "node --experimental-sqlite --test cloudflare/test/*.test.mjs"
   }
 }

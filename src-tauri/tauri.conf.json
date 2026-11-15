@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "D25 Quantum Workspace",
+  "version": "1.0.0",
+  "identifier": "tech.mahquantum.d25workspace",
+  "build": {
+    "beforeBuildCommand": "npm run build:desktop",
+    "beforeDevCommand": "npm run dev:desktop",
+    "devUrl": "http://localhost:3000",
+    "frontendDist": "../apps/web/dist-desktop"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "D25 Quantum Workspace | MAH Quantum",
+        "width": 1480,
+        "height": 920,
+        "minWidth": 960,
+        "minHeight": 640,
+        "resizable": true,
+        "backgroundColor": "#080c12"
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data: blob: asset: http://asset.localhost",
+        "font-src": "'self' data:",
+        "connect-src": "'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.workers.dev",
+        "worker-src": "'self' blob:",
+        "object-src": "'none'",
+        "base-uri": "'none'",
+        "frame-src": "'none'"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis",
+      "msi"
+    ],
+    "publisher": "MAH Quantum",
+    "copyright": "Copyright (c) 2026 MAH Quantum. All rights reserved.",
+    "shortDescription": "D25 Quantum Workspace by Devashri S Industries, a division of MAH Quantum",
+    "category": "Education",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  }
+}

@@ -1,26 +1,36 @@
-PROPRIETARY AND CONFIDENTIAL SOFTWARE LICENSE AGREEMENT
+PROPRIETARY SOFTWARE LICENSE NOTICE — D25 QUANTUM WORKSPACE
 
-Copyright (c) 2026 MAH Quantum™. All Rights Reserved.
-Developed by Devashri S Quantum.
+Copyright (c) 2026 MAH Quantum. All Rights Reserved.
+D25 Quantum Workspace is developed and published by Devashri S Industries,
+a division of MAH Quantum. MAH Quantum is the parent company and
+copyright holder of the original proprietary software.
 
-1. PROPRIETARY RIGHTS
-This software, source code, documentation, mathematical algorithms, visual interfaces, 
-and associated assets (collectively, the "Software") are the exclusive proprietary property 
-of MAH Quantum™, developed by Devashri S Quantum.
+1. OWNERSHIP AND SCOPE
+Unless a third-party component specifies otherwise, the original software
+source code, original algorithms, interfaces, documentation, and related
+original assets in this repository are proprietary to MAH Quantum.
+This source-repository notice is not an open-source software license.
 
 2. RESTRICTIONS
-Strictly no license is granted to any person obtaining a copy of this Software to deal in 
-the Software without restriction, including without limitation the rights to use, copy, 
-modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.
+No permission to copy, modify, distribute, sublicense, resell, or publicly
+deploy the proprietary components is granted merely by accessing the
+repository. Such activities require authorization from MAH Quantum.
+Nothing in this notice overrides applicable legal exceptions.
 
-Unauthorized copying, transferring, modification, decompilation, disassembly, 
-reverse engineering, or distribution of this file, via any medium, is strictly prohibited 
-without the prior express written consent of MAH Quantum™ / Devashri S Quantum.
+3. COMMERCIAL CUSTOMER LICENSES
+Commercial customers must receive applicable usage rights under a separate
+end-user license agreement or written authorization from MAH Quantum.
+The presence of an executable installer does not itself grant redistribution,
+resale or sublicensing rights.
 
-3. DISCLAIMER OF WARRANTY
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
-PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, 
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
-THE SOFTWARE.
+4. THIRD-PARTY SOFTWARE
+Third-party dependencies and assets remain governed by their respective
+licenses; this notice does not assert ownership over third-party materials.
+
+5. WARRANTY
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE PROPRIETARY
+SOFTWARE IS PROVIDED "AS IS", WITHOUT EXPRESS OR IMPLIED WARRANTIES.
+CUSTOMER AGREEMENTS AND NON-WAIVABLE STATUTORY RIGHTS, IF ANY, PREVAIL.
+
+D25 Quantum Workspace — By Devashri S Industries
+A division of MAH Quantum

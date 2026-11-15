@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Limited native desktop commands for D25 Quantum Workspace.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

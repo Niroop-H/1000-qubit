@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS d25_refunds (
+ payment_id TEXT PRIMARY KEY NOT NULL,
+ processed_at_ms INTEGER NOT NULL
+);

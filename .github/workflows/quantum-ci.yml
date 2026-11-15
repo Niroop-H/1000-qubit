@@ -18,6 +18,14 @@ jobs:
       - name: Audit production dependencies against npm advisories
         run: npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high
       - run: npm test
+      - name: Validate Cloudflare Workers Free + D1 licensing implementation
+        run: |
+          node --check cloudflare/src/worker.mjs
+          node --check cloudflare/src/auth.mjs
+          node --check cloudflare/src/razorpay.mjs
+          node --experimental-sqlite --test cloudflare/test/*.test.mjs
+      - name: Build and validate customer-local scientific desktop
+        run: npm run build:desktop
       - name: Check independent Python/TypeScript physics model parity
         run: node scripts/verify_physics_parity.mjs
       - run: npm run build:web
