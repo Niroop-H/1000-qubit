@@ -86,3 +86,7 @@ For Firebase deployment, install dependencies and run \`firebase deploy --only f
 Copied installer files, screenshots, JSON outputs and UI behavior can still be redistributed or recreated. An attacker with full device access can alter the frontend. **The security objective is not to make bytes impossible to copy; it is to keep confidential algorithms on trusted servers and refuse paid compute without a valid subscription.** No software distribution method makes reproduction literally impossible.
 
 Cloud compute costs, network availability, latency and maintenance now affect customer usability. Document data retention and customer circuit privacy before commercial launch.
+
+## Build selection prevents accidental release of an unconfigured shell
+
+Internal Windows CI artifacts are labeled D25-INTERNAL-ONLY-Development-Installers. The connected commercial build command is npm run desktop:build:connected; it first runs scripts/check-d25-release-config.mjs, which fails when Firebase's public Web API key or the d25Api/d25Compute URLs are missing or disagree on project origin. This *only* confirms static configuration. It does not authorize production publication or bypass the NO_GO Store release gate.

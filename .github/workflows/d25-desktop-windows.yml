@@ -16,6 +16,7 @@ on:
       - '.github/workflows/d25-desktop-windows.yml'
       - 'scripts/d25_store_preflight.mjs'
       - 'scripts/build-store-msix.ps1'
+      - 'scripts/check-d25-release-config.mjs'
       - 'docs/D25_STORE_RELEASE_GATES.md'
       - 'scripts/verify-commercial-bundle.mjs'
       - 'scripts/build-private-engine.mjs'
@@ -63,6 +64,13 @@ jobs:
         run: npm run desktop:icons
       - name: Rust native shell checks (no local license gate)
         run: cargo test --manifest-path src-tauri/Cargo.toml
+      - name: Confirm missing production Firebase configuration blocks a commercial release
+        shell: pwsh
+        run: |
+          node scripts/check-d25-release-config.mjs
+          if ($LASTEXITCODE -eq 0) { throw "CI development package unexpectedly passed production configuration preflight." }
+          $global:LASTEXITCODE = 0
+          Write-Host "Expected: internal development package cannot be sold without real Firebase configuration."
       - name: Build Windows EXE and MSI installers
         run: npm run desktop:build
       - name: Audit desktop bundle and record Microsoft Store release blockers
@@ -82,7 +90,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: D25-Quantum-Workspace-Windows-installers
+          name: D25-INTERNAL-ONLY-Development-Installers
           path: |
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi

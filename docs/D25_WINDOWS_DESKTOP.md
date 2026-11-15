@@ -52,7 +52,7 @@ src-tauri\target\release\bundle\nsis\D25 Quantum Workspace_1.0.0_x64-setup.exe
 src-tauri\target\release\bundle\msi\D25 Quantum Workspace_1.0.0_x64_en-US.msi
 ```
 
-You can also use **GitHub Actions → D25 Desktop Windows installers → Run workflow**, select the desired branch, then download the uploaded `D25-Quantum-Workspace-Windows-installers` artifact. For pull requests against main, this Windows build also runs automatically. A public repository's Actions artifacts should be treated as publicly accessible distribution materials.
+You can also use **GitHub Actions → D25 Desktop Windows installers → Run workflow**, select the desired branch, then download the uploaded `D25-INTERNAL-ONLY-Development-Installers` artifact. For pull requests against main, this Windows build also runs automatically. A public repository's Actions artifacts should be treated as publicly accessible distribution materials.
 
 ## Commercial release checks — not yet completed
 
@@ -71,3 +71,11 @@ You can also use **GitHub Actions → D25 Desktop Windows installers → Run wor
 See [D25 Microsoft Store Release Gates](D25_STORE_RELEASE_GATES.md). The basic NSIS EXE and MSI are useful for internal acceptance testing, but Store publication requires additional review. Microsoft Store does **not** sign EXE/MSI installers on your behalf; Microsoft Store **does** re-sign an eligible MSIX submission. The unsigned MSIX creation script is supplied for Partner Center packaging preparation, but no Store Partner Center identity or submission has been configured. 
 
 Run `node scripts/d25_store_preflight.mjs` after `npm run desktop:build` to get a machine-readable release verdict on the isolated `dist-desktop` build. `node scripts/d25_store_preflight.mjs --enforce` deliberately exits unsuccessfully until backend deployment, actual payment verification, security and scientific qualification are resolved. Do not bypass this check just to obtain a green release badge.
+
+## Commercial build configuration gate
+
+The ordinary desktop:build command creates a development installer that can deliberately display the unconfigured Firebase sign-in screen. It is **not saleable**. The Windows CI artifact is labeled D25-INTERNAL-ONLY-Development-Installers. Once the *actual* Firebase Cloud Functions have been deployed, store the public Vite keys and function URLs in the gitignored apps/web/.env.production.local, and use the stricter command:
+
+    npm run desktop:build:connected
+
+This requires a well-formed Firebase public Web API key and matching d25Api / d25Compute Cloud Function URLs from the same project. It verifies configuration format only; it does NOT verify service availability, paid activation, refund handling or Microsoft Store certification. For Store MSIX, use the exact Partner Center product identity rather than the GitHub development placeholders.
