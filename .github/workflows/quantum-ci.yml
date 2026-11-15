@@ -18,21 +18,14 @@ jobs:
       - name: Audit production dependencies against npm advisories
         run: npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high
       - run: npm test
-      - name: Build and validate protected server-only quantum engine
+      - name: Validate Cloudflare Workers Free + D1 licensing implementation
         run: |
-          npm run build:private-engine
-          node --test functions/test/compute-policy.test.cjs functions/test/compute-engine.test.cjs
-      - name: Build and inspect isolated commercial desktop bundle
+          node --check cloudflare/src/worker.mjs
+          node --check cloudflare/src/auth.mjs
+          node --check cloudflare/src/razorpay.mjs
+          node --test cloudflare/test/*.test.mjs
+      - name: Build and validate customer-local scientific desktop
         run: npm run build:desktop
-      - name: Check Firebase recurring billing backend and policies
-        run: |
-          node --check functions/index.js
-          node --test functions/test/*.test.cjs
-      - name: Resolve and audit Firebase Cloud Functions production dependencies
-        run: |
-          npm install --prefix functions --ignore-scripts --no-fund
-          npm audit --prefix functions --omit=dev --audit-level=high
-          node -e "require('./functions/index.js')"
       - name: Check independent Python/TypeScript physics model parity
         run: node scripts/verify_physics_parity.mjs
       - run: npm run build:web

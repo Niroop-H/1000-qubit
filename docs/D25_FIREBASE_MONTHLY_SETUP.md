@@ -1,3 +1,5 @@
+> **SUPERSEDED ARCHITECTURE (15 November 2026):** The owner specified LOCAL quantum computation on customer Windows PCs, with Firebase Spark Authentication and Cloudflare Workers Free + D1 Free licensing. DO NOT deploy Firebase Cloud Functions or a server quantum engine based on older instructions in this document. See [current architecture](D25_LOCAL_CLOUDFLARE_ARCHITECTURE.md). The local JavaScript engine is extractable; publication is NOT YET APPROVED.
+
 # D25 Quantum Workspace — Firebase accounts and ₹500/month Razorpay TEST subscriptions
 
 **State:** CODE STAGED ON DEVELOPMENT BRANCH, NO CLOUD DEPLOYMENT OR REAL CHARGES.  

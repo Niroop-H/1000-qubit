@@ -9,6 +9,7 @@ on:
       - 'assets/d25-desktop-icon.svg'
       - 'apps/web/**'
       - 'functions/**'
+      - 'cloudflare/**'
       - 'vercel.json'
       - 'firestore.rules'
       - 'package.json'
@@ -47,19 +48,12 @@ jobs:
         run: npm ci
       - name: Run quantum engine tests
         run: npm test
-      - name: Compile server-only private engine for policy tests (never upload)
-        run: npm run build:private-engine
-      - name: Check Firebase recurring billing and protected compute policies
+      - name: Verify Cloudflare D1 / Razorpay TEST licensing code
         run: |
-          node --check functions/index.js
-          node --test functions/test/*.test.cjs
-      - name: Resolve and audit Firebase Cloud Functions production dependencies
-        run: |
-          npm install --prefix functions --ignore-scripts --no-fund
-          npm audit --prefix functions --omit=dev --audit-level=high
-          node -e "require('./functions/index.js')"
-      - name: Verify private compute test contract
-        run: node --test functions/test/compute-policy.test.cjs functions/test/compute-engine.test.cjs
+          node --check cloudflare/src/worker.mjs
+          node --check cloudflare/src/auth.mjs
+          node --check cloudflare/src/razorpay.mjs
+          node --test cloudflare/test/*.test.mjs
       - name: Create D25 Windows icons
         run: npm run desktop:icons
       - name: Rust native shell checks (no local license gate)

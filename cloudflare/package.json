@@ -1,0 +1,13 @@
+{
+  "name": "d25-cloudflare-license",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "dev": "npx wrangler dev",
+    "deploy": "npx wrangler deploy",
+    "migrate:remote": "npx wrangler d1 migrations apply d25-license --remote",
+    "migrate:local": "npx wrangler d1 migrations apply d25-license --local"
+  }
+}

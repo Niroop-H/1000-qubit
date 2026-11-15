@@ -1,3 +1,5 @@
+> **SUPERSEDED ARCHITECTURE (15 November 2026):** The owner specified LOCAL quantum computation on customer Windows PCs, with Firebase Spark Authentication and Cloudflare Workers Free + D1 Free licensing. DO NOT deploy Firebase Cloud Functions or a server quantum engine based on older instructions in this document. See [current architecture](D25_LOCAL_CLOUDFLARE_ARCHITECTURE.md). The local JavaScript engine is extractable; publication is NOT YET APPROVED.
+
 > **Security architecture update:** The protected desktop build now excludes browser quantum simulation workers and calls `d25Compute` on MAH-managed Firebase infrastructure; customer licenses and the 20-run/five-hour quota are validated on the server. This is an untested deployment stage. The old developer web build remains local and is not in the commercial Windows package. See [D25 protected compute](D25_PROTECTED_COMPUTE.md). Store status remains NO-GO.
 
 # D25 Quantum Workspace — Microsoft Store release decision

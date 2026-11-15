@@ -1,0 +1,21 @@
+# MAH Quantum D25 — Cloudflare Workers Free + D1 Free.
+# Create your FREE D1 database, then replace the UUID below before deployment.
+# NEVER add Razorpay keys, webhook secrets, Firebase service accounts or
+# Cloudflare API tokens to this file or to GitHub.
+name = "d25-license"
+main = "src/worker.mjs"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+FIREBASE_PROJECT_ID = "ds-quantum-267dd"
+D25_ENABLE_TEST_CHECKOUT = "false"
+RAZORPAY_TEST_PLAN_ID = ""
+D25_ALLOWED_ORIGINS = ""
+D25_ADMIN_GOOGLE_UIDS = ""
+
+[[d1_databases]]
+binding = "DB"
+database_name = "d25-license"
+database_id = "REPLACE_WITH_D1_DATABASE_UUID"
+migrations_dir = "migrations"

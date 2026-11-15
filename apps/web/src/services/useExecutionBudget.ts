@@ -1,9 +1,10 @@
 import {useCallback,useEffect,useState} from "react";
+import {refreshSession} from "../auth/d25Firebase";
 import {BROWSER_BUDGET_KEY,BROWSER_EXECUTION_LIMIT,parseBudget,spendBudget,
  remainingTimeLabel,type BrowserBudget} from "./execution-budget-policy";
 
 type BudgetReply={limit:number;remaining:number;retryAt:number;allowed:boolean};
-type DesktopHost=Window&{__TAURI__?:{core?:{invoke?:(command:string)=>Promise<unknown>}}};
+const licenseBase=String(import.meta.env.VITE_D25_API_BASE||"").replace(/\/$/,"");
 const isDesktop=()=>typeof window!=="undefined"&&"__TAURI_INTERNALS__" in window;
 const useNetwork=()=>!isDesktop()&&typeof location!=="undefined"&&
  !["localhost","127.0.0.1","::1"].includes(location.hostname);
@@ -16,12 +17,27 @@ function validBudget(data:any,schema:string):data is BudgetReply {
   typeof data.allowed==="boolean";
 }
 async function desktopResponse(command:"d25_quota_status"|"d25_quota_reserve"):Promise<BudgetReply>{
- const bridge=(window as DesktopHost).__TAURI__?.core?.invoke;
- if(typeof bridge!=="function")throw Error("Native D25 allowance bridge is unavailable.");
- const data=await bridge(command);
- if(!validBudget(data,"D25-Desktop-Quota/v1"))throw Error("Unexpected native allowance response.");
+ if(!/^https:\/\/[a-zA-Z0-9.-]+(?:\/[a-zA-Z0-9/_-]+)?$/.test(licenseBase))
+  throw Error("Cloudflare D25 license endpoint is not configured.");
+ const user=await refreshSession();
+ if(!user?.emailVerified)throw Error("Verified Firebase login is required.");
+ const reserve=command==="d25_quota_reserve";
+ const url=licenseBase+"/quota/"+(reserve?"reserve":"status");
+ const response=await fetch(url,{method:reserve?"POST":"GET",cache:"no-store",
+  headers:{"Authorization":"Bearer "+user.idToken,
+   "Accept":"application/json",...(reserve?{"Content-Type":"application/json"}:{})},
+  ...(reserve?{body:JSON.stringify({requestId:crypto.randomUUID()})}:{}),
+  signal:AbortSignal.timeout(20000)
+ });
+ if(response.status===401||response.status===403)throw Error("Active Firebase license required.");
+ if(response.status===429)return desktopResponse("d25_quota_status");
+ if(!response.ok)throw Error("Cloudflare license server refused authorization.");
+ const data=await response.json();
+ if(!validBudget(data,"D25-Desktop-Quota/v1"))
+  throw Error("Unexpected D25 server quota response.");
  return data;
 }
+
 async function remoteResponse(method:"GET"|"POST"):Promise<BudgetReply|null>{
  const res=await fetch("/api/usage",{method,cache:"no-store",
   headers:{"Accept":"application/json",...(method==="POST"?{"Content-Type":"application/json"}:{})},
@@ -52,7 +68,7 @@ export function useExecutionBudget(){
    const poll=()=>{void desktopResponse("d25_quota_status").then(result=>{
     if(active){setDesktopBudget(result);setDesktopError("");setNow(Date.now());}
    }).catch(()=>{
-    if(active){setDesktopBudget(null);setDesktopError("Native desktop execution allowance unavailable. Computations are blocked.");}
+    if(active){setDesktopBudget(null);setDesktopError("Cloudflare license authorization unavailable. Computations are blocked.");}
    });};
    poll();
    const pollTimer=setInterval(poll,5000);
@@ -83,7 +99,7 @@ export function useExecutionBudget(){
     return{ok:false,message:"Desktop execution allowance used. Retry in "+
       remainingTimeLabel(result.retryAt,Date.now())+"."};
    }catch{
-    const message="Native desktop execution allowance unavailable. Computations are blocked.";
+    const message="Cloudflare license authorization unavailable. Computations are blocked.";
     setDesktopError(message);setDesktopBudget(null);
     return{ok:false,message};
    }
@@ -125,9 +141,9 @@ export function useExecutionBudget(){
   const remaining=desktopBudget?.remaining===0&&desktopBudget.retryAt>0&&now>=desktopBudget.retryAt?
    BROWSER_EXECUTION_LIMIT:desktopBudget?.remaining??0;
   const status=desktopError||(
-   waitingForQuota?"Checking native desktop execution allowance…":
-   cooldown?"Desktop allowance used · renews in "+remainingTimeLabel(desktopBudget!.retryAt,now):
-   remaining+"/"+BROWSER_EXECUTION_LIMIT+" desktop execution credits available · 5-hour cooldown after all credits"
+   waitingForQuota?"Checking paid online execution allowance…":
+   cooldown?"Online execution allowance used · renews in "+remainingTimeLabel(desktopBudget!.retryAt,now):
+   remaining+"/"+BROWSER_EXECUTION_LIMIT+" paid local-compute launches available · 5-hour cooldown after all credits"
   );
   return{reserve,waiting:waitingForQuota||!!desktopError||cooldown,status,remaining};
  }
