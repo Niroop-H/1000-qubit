@@ -11,6 +11,9 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/d25-desktop-windows.yml'
+      - 'scripts/d25_store_preflight.mjs'
+      - 'scripts/build-store-msix.ps1'
+      - 'docs/D25_STORE_RELEASE_GATES.md'
 
 permissions:
   contents: read
@@ -41,6 +44,19 @@ jobs:
         run: cargo test --manifest-path src-tauri/Cargo.toml
       - name: Build Windows EXE and MSI installers
         run: npm run desktop:build
+      - name: Audit desktop bundle and record Microsoft Store release blockers
+        run: node scripts/d25_store_preflight.mjs
+      - name: Check MSIX packaging with a development-only identity (NOT FOR PUBLICATION)
+        shell: pwsh
+        run: |
+          ./scripts/build-store-msix.ps1 -IdentityName "MAHQuantum.D25.DevValidation" -Publisher "CN=D25 Development Identity" -Version "1.0.0.0" -OutputPath "artifacts/store/D25-DEV-UNSIGNED.msix"
+      - name: Upload Store readiness report (does not certify the app)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: D25-Store-Readiness-NO-GO-Report
+          path: artifacts/d25-store-preflight.json
+          if-no-files-found: warn
       - name: Upload Windows installers
         if: always()
         uses: actions/upload-artifact@v4

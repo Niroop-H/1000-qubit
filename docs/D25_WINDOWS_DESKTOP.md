@@ -65,3 +65,9 @@ You can also use **GitHub Actions → D25 Desktop Windows installers → Run wor
 7. Do not advertise unrestricted 1,000+ qubit universal simulation or industrial hardware control; the README documents the deliberately bounded, research-only model families.
 
 **Branding / ownership:** D25 Quantum Workspace is a product from Devashri S Industries, **a division of MAH Quantum**. MAH Quantum is the parent company, not a subsidiary of Devashri S Industries.
+
+## Microsoft Store: not ready to publish
+
+See [D25 Microsoft Store Release Gates](D25_STORE_RELEASE_GATES.md). The basic NSIS EXE and MSI are useful for internal acceptance testing, but Store publication requires additional review. Microsoft Store does **not** sign EXE/MSI installers on your behalf; Microsoft Store **does** re-sign an eligible MSIX submission. The unsigned MSIX creation script is supplied for Partner Center packaging preparation, but no Store Partner Center identity or submission has been configured. 
+
+Run `node scripts/d25_store_preflight.mjs` after `npm run desktop:build` to get a machine-readable, honest release verdict. `node scripts/d25_store_preflight.mjs --enforce` deliberately exits unsuccessfully until business-critical engine secrecy, activation and external qualification are resolved. Do not bypass this check just to obtain a green release badge.
