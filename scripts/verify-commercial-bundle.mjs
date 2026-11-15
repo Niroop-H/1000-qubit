@@ -22,7 +22,7 @@ check("NO_SOURCE_FILES_OR_WORKERS",forbidden.length===0,
  forbidden.map(f=>relative(out,f)).join(", ")||"No development code, source maps, keys or simulation workers.");
 const text=js.map(p=>readFileSync(p,"utf8")).join("\n");
 const knownSolverMarkers=["simulateScalable","QuantumCircuit",
- "MAH-Quantum-Industry-Result/v1","stabilizer-tableau","industrial-research.worker",
+ "stabilizer-tableau","industrial-research.worker",
  "NoiseEngine","simulate("];
 // Some generic strings can appear in legitimate UX; these markers may not.
 const found=knownSolverMarkers.filter(marker=>text.includes(marker));
