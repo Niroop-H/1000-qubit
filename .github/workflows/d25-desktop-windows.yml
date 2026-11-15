@@ -32,6 +32,13 @@ jobs:
   windows-build:
     runs-on: windows-2025
     timeout-minutes: 90
+    # This is a PUBLIC Firebase Web API key, NOT a service account or
+    # Razorpay secret. The browser-based Windows app necessarily ships it.
+    # Configure Settings > Secrets and variables > Actions > Variables:
+    # D25_FIREBASE_WEB_API_KEY = the project's actual Firebase Web API key.
+    env:
+      VITE_D25_FIREBASE_API_KEY: ${{ vars.D25_FIREBASE_WEB_API_KEY }}
+      VITE_D25_API_BASE: https://d25-license.mahquantum.workers.dev/v1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -58,13 +65,20 @@ jobs:
         run: npm run desktop:icons
       - name: Rust native shell checks (no local license gate)
         run: cargo test --manifest-path src-tauri/Cargo.toml
-      - name: Confirm missing production Firebase configuration blocks a commercial release
+      - name: Validate Firebase and Cloudflare public desktop configuration
         shell: pwsh
         run: |
-          node scripts/check-d25-release-config.mjs
-          if ($LASTEXITCODE -eq 0) { throw "CI development package unexpectedly passed production configuration preflight." }
-          $global:LASTEXITCODE = 0
-          Write-Host "Expected: internal development package cannot be sold without real Firebase configuration."
+          if ([string]::IsNullOrWhiteSpace($env:VITE_D25_FIREBASE_API_KEY)) {
+            Write-Host "::warning::D25_FIREBASE_WEB_API_KEY repository variable is missing. The resulting installer displays a setup blocker and is NOT usable for sign-in."
+            "D25 desktop: NOT CONFIGURED - development placeholder only" >> $env:GITHUB_STEP_SUMMARY
+            node scripts/check-d25-release-config.mjs
+            if ($LASTEXITCODE -eq 0) { throw "Unconfigured app unexpectedly passed release preflight." }
+            $global:LASTEXITCODE = 0
+          } else {
+            node scripts/check-d25-release-config.mjs
+            if ($LASTEXITCODE -ne 0) { throw "Invalid Firebase / Cloudflare desktop configuration." }
+            "D25 desktop: PUBLIC Firebase and Cloudflare endpoints configured; subscription acceptance still required" >> $env:GITHUB_STEP_SUMMARY
+          }
       - name: Build Windows EXE and MSI installers
         run: npm run desktop:build
       - name: Audit desktop bundle and record Microsoft Store release blockers

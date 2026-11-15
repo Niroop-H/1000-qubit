@@ -118,8 +118,12 @@ export default function D25AccountGate({children}:{children:ReactNode}){
  if(!configured())return <main className="d25-auth-page"><div className="d25-auth-panel">
   <span className="d25-auth-eyebrow">MAH QUANTUM / DEVASHRI S INDUSTRIES</span>
   <h1>D25 Quantum Workspace</h1>
-  <p>Firebase test authentication is not configured. Please set the Firebase Web API key
-  and D25 Cloud Functions API URL before using this desktop edition.</p>
+  <p>This installer was built without a Firebase Web API key or the Cloudflare licensing
+  endpoint. Local Notepad configuration does not update an already built installer.</p>
+  <p>For a connected development installer, set GitHub Actions repository variable
+  <code>D25_FIREBASE_WEB_API_KEY</code> to your public Firebase Web API key and
+  rebuild the D25 Windows installer. Never upload a Firebase service-account key or
+  Razorpay merchant secret.</p>
   <p className="d25-auth-note">No payment has been requested. Live billing is disabled.</p>
  </div></main>;
  if(loading)return <main className="d25-auth-page"><div className="d25-auth-panel" role="status">
