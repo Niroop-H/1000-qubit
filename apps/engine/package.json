@@ -1,7 +1,7 @@
 {
   "name": "@mah-quantum/engine",
   "version": "1.0.0",
-  "author": "Devashri S Quantum",
+  "author": "Devashri S Industries (a division of MAH Quantum)",
   "license": "UNLICENSED",
   "main": "dist/server.js",
   "scripts": {

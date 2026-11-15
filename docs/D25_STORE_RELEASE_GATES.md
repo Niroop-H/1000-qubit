@@ -70,3 +70,7 @@ The first command produces `artifacts/d25-store-preflight.json` listing build hy
 9. Production monitoring, abuse response, incident response, rollback, customer support, tested recovery and staged release strategy; SLAs require empirical evidence.
 
 Official Microsoft references: [Store distribution paths](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/choose-distribution-path), [Win32 Store requirements](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msi/app-package-requirements), [Store readiness](https://learn.microsoft.com/en-us/windows/apps/publish/store-readiness-checklist), [Microsoft's MSIX packaging for Tauri](https://learn.microsoft.com/en-us/windows/apps/dev-tools/winapp-cli/guides/tauri), [Tauri security](https://tauri.app/security/).
+
+## Razorpay commercial entitlement proposal
+
+The proposed one-time **₹500 per named user** license is documented in [D25 Razorpay commerce architecture](D25_RAZORPAY_COMMERCE.md). Signature and payment-shape validators are present, but there is **no live checkout or license activation** yet. No customer payments should be accepted until verified purchase-to-account linking, durable entitlements, refund workflows and customer terms are operational. The current release remains **NO GO**.

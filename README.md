@@ -1,3 +1,5 @@
+> **Razorpay commerce proposal:** D25 Quantum Workspace is planned at **₹500 per named user**, subject to final sales terms. Secure server-side signature/payment validation helpers and tests exist, but customer charging and license issuance remain **disabled pending account, webhook, durable store and entitlement integration**. See [D25 commerce architecture](docs/D25_RAZORPAY_COMMERCE.md).
+
 > **Windows desktop edition:** **D25 Quantum Workspace** — developed by **Devashri S Industries**, a division of **MAH Quantum** (parent company and copyright holder). A Tauri 2 desktop integration and no-cost Windows EXE/MSI build workflow are available in [docs/D25_WINDOWS_DESKTOP.md](docs/D25_WINDOWS_DESKTOP.md). Offline execution credits are native per-user usage counters, not an activated commercial license; the desktop app must pass Windows packaging and acceptance checks before sale.
 
 # MAH Quantum™ Development Studio
