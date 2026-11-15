@@ -18,6 +18,12 @@ jobs:
       - name: Audit production dependencies against npm advisories
         run: npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high
       - run: npm test
+      - name: Build and validate protected server-only quantum engine
+        run: |
+          npm run build:private-engine
+          node --test functions/test/compute-policy.test.cjs functions/test/compute-engine.test.cjs
+      - name: Build and inspect isolated commercial desktop bundle
+        run: npm run build:desktop
       - name: Check Firebase recurring billing backend and policies
         run: |
           node --check functions/index.js

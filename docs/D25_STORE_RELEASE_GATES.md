@@ -1,3 +1,5 @@
+> **Security architecture update:** The protected desktop build now excludes browser quantum simulation workers and calls `d25Compute` on MAH-managed Firebase infrastructure; customer licenses and the 20-run/five-hour quota are validated on the server. This is an untested deployment stage. The old developer web build remains local and is not in the commercial Windows package. See [D25 protected compute](D25_PROTECTED_COMPUTE.md). Store status remains NO-GO.
+
 # D25 Quantum Workspace — Microsoft Store release decision
 
 **Product:** D25 Quantum Workspace  

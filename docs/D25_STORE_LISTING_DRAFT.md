@@ -8,11 +8,11 @@
 
 ## Short description
 
-A Windows scientific workspace for quantum circuit simulation, bounded large-circuit research and educational physics models.
+A Windows workspace for authenticated cloud-backed quantum circuit simulation and bounded MaxCut research.
 
 ## Long description
 
-D25 Quantum Workspace brings interactive quantum circuit composition, supported OpenQASM execution, scientific models, and bounded research workbenches into a desktop environment. Create, simulate, inspect and export research exercises with numerical methods designed for reproducibility.
+D25 Quantum Workspace currently offers authenticated, cloud-backed execution of supported OpenQASM circuits and bounded MaxCut QAOA graph models, with result visualization and JSON export. Your paid monthly subscription and computation allowance are verified by MAH Quantum servers. The full developer browser workbench and hardware models are not yet available in the isolated commercial Windows build.
 
 The product performs **classical simulations**, not physical quantum hardware execution. Large logical-qubit modes are limited to tractable circuit families; general thousands-of-qubits universal simulations are not supported. Industrial equipment connections require separate commissioning and safety qualification.
 

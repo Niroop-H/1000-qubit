@@ -15,6 +15,10 @@
     "test": "npm run test --workspace=apps/engine",
     "desktop:icons": "npx --yes @tauri-apps/cli@2.12.4 icon assets/d25-desktop-icon.svg",
     "desktop:dev": "npx --yes @tauri-apps/cli@2.12.4 dev",
-    "desktop:build": "npx --yes @tauri-apps/cli@2.12.4 build --bundles nsis,msi"
+    "desktop:build": "npx --yes @tauri-apps/cli@2.12.4 build --bundles nsis,msi",
+    "build:private-engine": "node scripts/build-private-engine.mjs",
+    "build:desktop": "npm run build:desktop --workspace=apps/web",
+    "dev:desktop": "npm run dev:desktop --workspace=apps/web",
+    "verify:commercial": "node scripts/verify-commercial-bundle.mjs"
   }
 }

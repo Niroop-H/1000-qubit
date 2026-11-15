@@ -335,3 +335,8 @@ exports.d25Admin=adminHandler({
  onRequest,auth:getAuth(),db:database,cancelSubscription,
  region:REGION,secrets
 });
+
+/** Protected subscriber-only computation. Server-side quantum engine binary
+ * is generated during Firebase deployment and is NOT shipped with Windows. */
+const {httpHandler:protectedComputeHandler}=require("./compute");
+exports.d25Compute=protectedComputeHandler({onRequest,region:REGION});

@@ -1,12 +1,7 @@
-mod quota;
-
+// D25 commercial shell deliberately exposes no native compute quota IPC.
+// Paid access and execution quotas are verified by the trusted service.
 pub fn run() {
     tauri::Builder::default()
-        .manage(quota::QuotaStore::default())
-        .invoke_handler(tauri::generate_handler![
-            quota::d25_quota_status,
-            quota::d25_quota_reserve
-        ])
         .run(tauri::generate_context!())
         .expect("failed to start D25 Quantum Workspace");
 }

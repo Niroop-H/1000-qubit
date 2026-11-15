@@ -3,8 +3,19 @@
     {
       "source": "functions",
       "codebase": "d25",
-      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log"]
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        ".env.example"
+      ],
+      "predeploy": [
+        "npm run build:private-engine"
+      ]
     }
   ],
-  "firestore": { "rules": "firestore.rules" }
+  "firestore": {
+    "rules": "firestore.rules"
+  }
 }

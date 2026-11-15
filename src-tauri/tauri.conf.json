@@ -4,13 +4,13 @@
   "version": "1.0.0",
   "identifier": "tech.mahquantum.d25workspace",
   "build": {
-    "beforeBuildCommand": "npm run build:web",
-    "beforeDevCommand": "npm run dev:web",
+    "beforeBuildCommand": "npm run build:desktop",
+    "beforeDevCommand": "npm run dev:desktop",
     "devUrl": "http://localhost:3000",
-    "frontendDist": "../apps/web/dist"
+    "frontendDist": "../apps/web/dist-desktop"
   },
   "app": {
-    "withGlobalTauri": true,
+    "withGlobalTauri": false,
     "windows": [
       {
         "label": "main",
@@ -30,8 +30,8 @@
         "style-src": "'self' 'unsafe-inline'",
         "img-src": "'self' data: blob: asset: http://asset.localhost",
         "font-src": "'self' data:",
-        "connect-src": "'self' ipc: http://ipc.localhost https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.cloudfunctions.net",
-        "worker-src": "'self' blob:",
+        "connect-src": "'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.cloudfunctions.net",
+        "worker-src": "'none'",
         "object-src": "'none'",
         "base-uri": "'none'",
         "frame-src": "'none'"

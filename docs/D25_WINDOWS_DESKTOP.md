@@ -7,14 +7,14 @@
 
 ## What this milestone includes
 
-- Tauri 2 desktop shell wrapping the *existing local-first* React/Vite UI and quantum worker code.
-- Branded D25 start screen and Windows application identity.
+- Tauri 2 commercial desktop shell with **isolated** Firebase Auth + protected compute UI. It does **not ship the existing local quantum/worker algorithms**. See [D25 protected compute](D25_PROTECTED_COMPUTE.md).
+- Branded D25 protected compute workbench and Windows application identity.
 - Windows NSIS `-setup.exe` and WiX `.msi` packaging targets, with a reproducible Windows GitHub Actions workflow.
-- A native, per-user quota record stored in Windows application data, shared between Studio, 1000+ research and QAOA run buttons through their existing budget hook.
-- The same **20 successful execution reservations**, then a **five-hour** cooldown. A rejected 21st reservation does not run the job. An eligible 20th reservation runs and starts the timer.
-- Existing browser access-code behavior is unchanged. Existing browser quotas and hosted industry API quotas are unchanged.
+- A **server-side**, per-Firebase-user Firestore quota for protected compute requests. Client-side quotas are not the commercial purchase boundary.
+- **20 protected execution reservations**, then a **five-hour** cooldown. A rejected 21st request does not execute. A reserved launch consumes a credit even if its compute fails.
+- Existing browser/development mode remains separate and is not packed into commercial installers.
 
-**Important limitations:** Native quota files, device clocks and a local JavaScript simulation worker can be modified by a sufficiently capable user. This is an offline *usage policy*, not purchase/license enforcement, network-address rate limiting or tamper-proof DRM. A production sales platform needs a MAH-controlled license issuance and activation service (or signed offline entitlements) with documented customer terms. A Firebase Authentication account gate and Razorpay **TEST** subscription backend are now staged in a separate directory, but have **not been deployed to a Firebase project** or verified against your merchant account. See [Firebase monthly setup](D25_FIREBASE_MONTHLY_SETUP.md). No live entitlement issuance, tamper-proof algorithm protection, hardware driver certification, or automatic updater is provided.
+**Important limitations:** The new protected desktop requires online Firebase access and MAH-owned backend computation. This is not yet deployed, independently accepted or available for sale. Other existing web workbenches are NOT included in this commercial build until moved to protected endpoints. A copied UI can still be changed; server entitlement verification protects paid execution, not client pixels. See [protected compute security](D25_PROTECTED_COMPUTE.md) and [Firebase monthly setup](D25_FIREBASE_MONTHLY_SETUP.md). No unrestricted quantum processor or certified physical hardware control is claimed.
 
 ## Zero-cost Windows build requirements
 
@@ -43,7 +43,7 @@ The development command launches Vite and the Tauri desktop window. Stop it with
 npm run desktop:build
 ```
 
-The build itself runs `npm run build:web` from the Tauri configuration. To avoid changing the web app lockfile, desktop scripts fetch a specifically pinned Tauri CLI (`@tauri-apps/cli@2.12.4`) using `npx`. Rust crates are currently resolved through Cargo's compatible 2.x constraints; a reviewed, committed `src-tauri/Cargo.lock` should be added after the first successful Windows build to pin them for release repeatability.
+The build runs `npm run build:desktop` from Tauri configuration and validates `dist-desktop` for any local simulation workers. The separate web/developer build continues to run `npm run build:web`. To avoid changing the web app lockfile, desktop scripts fetch a specifically pinned Tauri CLI (`@tauri-apps/cli@2.12.4`) using `npx`. Rust crates are currently resolved through Cargo's compatible 2.x constraints; a reviewed, committed `src-tauri/Cargo.lock` should be added after the first successful Windows build to pin them for release repeatability.
 
 Expected outputs (actual version/arch-dependent filenames):
 
@@ -56,9 +56,9 @@ You can also use **GitHub Actions → D25 Desktop Windows installers → Run wor
 
 ## Commercial release checks — not yet completed
 
-1. Confirm each route loads when installed (Studio, 1000+, Lab, Sensing, Communication) and exports/downloads work in WebView2.
-2. Reboot and verify the remaining native credits, 21st-launch rejection and five-hour renewal without relying on browser data.
-3. Verify the window can be resized, closed/reopened and uninstalled safely; check installed size and offline startup on Windows 10/11.
+1. Confirm Firebase authentication, subscribed protected execution and JSON exports work in the actual installed commercial shell. Other browser-only workspaces are deliberately unavailable until securely migrated.
+2. Verify Firestore server-side credits, concurrent 21st-launch rejection and five-hour renewal, across reinstall and different devices.
+3. Verify the window can be resized, closed/reopened and uninstalled safely; check installed size and **honest offline failure**, since execution requires the service.
 4. Audit all frontend/Rust dependencies, third-party licenses, the security boundary and supply-chain artifacts.
 5. Issue a customer EULA, refund/privacy terms and sales license entitlements under MAH Quantum.
 6. For wider distribution, consider code-signing and a signed update channel; an unsigned application may show Windows SmartScreen warnings.
@@ -70,4 +70,4 @@ You can also use **GitHub Actions → D25 Desktop Windows installers → Run wor
 
 See [D25 Microsoft Store Release Gates](D25_STORE_RELEASE_GATES.md). The basic NSIS EXE and MSI are useful for internal acceptance testing, but Store publication requires additional review. Microsoft Store does **not** sign EXE/MSI installers on your behalf; Microsoft Store **does** re-sign an eligible MSIX submission. The unsigned MSIX creation script is supplied for Partner Center packaging preparation, but no Store Partner Center identity or submission has been configured. 
 
-Run `node scripts/d25_store_preflight.mjs` after `npm run desktop:build` to get a machine-readable, honest release verdict. `node scripts/d25_store_preflight.mjs --enforce` deliberately exits unsuccessfully until business-critical engine secrecy, activation and external qualification are resolved. Do not bypass this check just to obtain a green release badge.
+Run `node scripts/d25_store_preflight.mjs` after `npm run desktop:build` to get a machine-readable release verdict on the isolated `dist-desktop` build. `node scripts/d25_store_preflight.mjs --enforce` deliberately exits unsuccessfully until backend deployment, actual payment verification, security and scientific qualification are resolved. Do not bypass this check just to obtain a green release badge.

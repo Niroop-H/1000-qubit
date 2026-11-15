@@ -5,6 +5,8 @@ service cloud.firestore {
     // by trusted Cloud Functions through the Admin SDK. Never by user clients.
     match /d25Accounts/{uid} { allow read, write: if false; }
     match /d25Subscriptions/{id} { allow read, write: if false; }
+    match /d25ComputeQuota/{uid} { allow read, write: if false; }
+    match /d25ComputeReservations/{id} { allow read, write: if false; }
     match /d25Charges/{id} { allow read, write: if false; }
     match /d25WebhookEvents/{id} { allow read, write: if false; }
     match /d25AdminAudit/{id} { allow read, write: if false; }

@@ -17,6 +17,8 @@ on:
       - 'scripts/d25_store_preflight.mjs'
       - 'scripts/build-store-msix.ps1'
       - 'docs/D25_STORE_RELEASE_GATES.md'
+      - 'scripts/verify-commercial-bundle.mjs'
+      - 'scripts/build-private-engine.mjs'
       - 'functions/**'
       - 'firebase.json'
       - 'firestore.rules'
@@ -53,9 +55,13 @@ jobs:
           npm install --prefix functions --ignore-scripts --no-fund
           npm audit --prefix functions --omit=dev --audit-level=high
           node -e "require('./functions/index.js')"
+      - name: Build and test private service quantum engine (not distributed)
+        run: |
+          npm run build:private-engine
+          node --test functions/test/compute-policy.test.cjs functions/test/compute-engine.test.cjs
       - name: Create D25 Windows icons
         run: npm run desktop:icons
-      - name: Rust native quota regression tests
+      - name: Rust native shell checks (no local license gate)
         run: cargo test --manifest-path src-tauri/Cargo.toml
       - name: Build Windows EXE and MSI installers
         run: npm run desktop:build
