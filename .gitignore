@@ -36,3 +36,7 @@ __pycache__/
 
 # Generated test and browser evidence
 artifacts/
+
+# Generated desktop installers, Rust build results and icons
+src-tauri/target/
+src-tauri/icons/
