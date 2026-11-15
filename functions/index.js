@@ -10,6 +10,7 @@ const {defineSecret}=require("firebase-functions/params");
 const {initializeApp,getApps}=require("firebase-admin/app");
 const {getAuth}=require("firebase-admin/auth");
 const {getFirestore}=require("firebase-admin/firestore");
+const {adminHandler}=require("./admin");
 const {randomUUID}=require("node:crypto");
 const {
  PRICE_PAISE,CURRENCY,MAX_CYCLES,verifyWebhook,verifyMonthlyPlan,
@@ -81,7 +82,7 @@ async function requireVerifiedUser(req){
  if(typeof raw!=="string"||!/^Bearer [A-Za-z0-9._-]{100,6000}$/.test(raw))
   throw error("Sign in with Firebase Authentication.",401);
  let claims;
- try{claims=await getAuth().verifyIdToken(raw.slice(7));}
+ try{claims=await getAuth().verifyIdToken(raw.slice(7),true);}
  catch{throw error("Firebase login token is invalid or expired. Sign in again.",401);}
  if(!claims.uid||!claims.email_verified)throw error("Verify your email address before subscribing.",403);
  return {uid:claims.uid,email:claims.email||""};
@@ -326,4 +327,11 @@ exports.d25RazorpayWebhook=onRequest({
   console.error("D25 verified webhook transaction failed",e?.name||"unknown");
   return json(res,503,{error:"retry_later"});
  }
+});
+
+// The admin console is separately locked to verified Google sign-in and a
+// custom claim assigned by an operator, never by a browser request.
+exports.d25Admin=adminHandler({
+ onRequest,auth:getAuth(),db:database,cancelSubscription,
+ region:REGION,secrets
 });

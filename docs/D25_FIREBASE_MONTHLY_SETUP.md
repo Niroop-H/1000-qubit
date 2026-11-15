@@ -149,3 +149,13 @@ Official references: [Firebase password authentication](https://firebase.google.
 ## First-launch visibility
 
 The branded desktop product homepage remains publicly viewable after installation. Selecting a computational workspace opens the Firebase account/subscription gate, which fails closed when Firebase configuration, payment verification or connectivity is unavailable. This is **not** a cryptographically secure executable-code boundary.
+
+## Admin console, marketing charts and Google sign-in
+
+The administrator portal is the web route `/admin` on the Vercel-hosted site (not a Tauri embedded Google login). Enable Google as a Firebase Authentication provider, register the exact HTTPS domain as an authorized domain, and register the same origin with Google Identity Services (Google OAuth Web client). Build the web app with the public environment variables `VITE_D25_FIREBASE_API_KEY`, `VITE_D25_GOOGLE_CLIENT_ID` and `VITE_D25_ADMIN_API_BASE` (the Cloud Function URL ending in `/d25Admin`). Set server-only `D25_ADMIN_ALLOWED_ORIGINS` to the exact HTTPS website origin.
+
+Admin privileges require BOTH a Google sign-in AND the Firebase Admin SDK custom claim `d25Admin: true`. Sign in to create the Google-linked Firebase user, then run `functions/scripts/grant-d25-admin.cjs` using trusted Google Application Default Credentials and the dedicated project ID, with `D25_ADMIN_GRANT_CONFIRM` set to the user's confirmed Firebase UID. Never set roles based only on email strings or from client-supplied values. Granting access can take a token refresh or re-login. The script requires verified Google provider linkage.
+
+The admin dashboard reads only server-authorized aggregated collections and paged users. Its revenue graph is recorded captured transaction amounts **before fees/refunds**, and recurring revenue is identified as an **upper bound**, not an audited finance statement. Visitor analytics/conversion attribution are not connected. Staff can disable/enable normal users, revoke a license (after requesting subscription cancellation), request cancellation of future renewals, and inspect recent audit entries. Every admin mutation requires a confirmation and leaves a Firestore audit record.
+
+The admin portal cannot grant itself administrator status, change prices, or create arbitrary paid access. The only trusted role-grant mechanism is the operator script. Deployments and actual Google OAuth have not yet been validated against a live project.

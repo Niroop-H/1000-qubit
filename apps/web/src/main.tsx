@@ -5,6 +5,7 @@ import {ThemeProvider} from "./Theme";
 import "./themes.css";
 import WorkspaceAccess from "./WorkspaceAccess";
 import D25AccountGate from "./D25AccountGate";
+const AdminPortal = lazy(() => import("./admin/D25AdminPortal"));
 import {AccessProvider} from "./access/AccessProvider";
 const Landing = lazy(() => import("./Landing"));
 const DesktopHome = lazy(() => import("./DesktopHome"));
@@ -17,7 +18,7 @@ const Communication = lazy(() => import("./lab/Communication"));
 const desktop = "__TAURI_INTERNALS__" in window;
 const path = window.location.pathname.replace(/\/index\.html$/, "").replace(/\/$/, "");
 if(desktop) document.title = "D25 Quantum Workspace | MAH Quantum";
-const Content = path === '/studio' ? Studio : path === '/1000-plus' ? LargeQuantum : path === '/lab/operations' ? Lab : path === '/lab' ? Playground : path === '/sensing' ? Sensing : path === '/communication' ? Communication : (desktop ? DesktopHome : Landing);
+const Content = path === '/admin' ? AdminPortal : path === '/studio' ? Studio : path === '/1000-plus' ? LargeQuantum : path === '/lab/operations' ? Lab : path === '/lab' ? Playground : path === '/sensing' ? Sensing : path === '/communication' ? Communication : (desktop ? DesktopHome : Landing);
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider><AccessProvider><Suspense
@@ -34,7 +35,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </div>
       }
     >
-      {desktop ? Content === DesktopHome ? <Content /> : <D25AccountGate><Content /></D25AccountGate> : Content === Landing ? <Content /> : <WorkspaceAccess><Content /></WorkspaceAccess>}
+      {Content === AdminPortal ? <Content /> : desktop ? Content === DesktopHome ? <Content /> : <D25AccountGate><Content /></D25AccountGate> : Content === Landing ? <Content /> : <WorkspaceAccess><Content /></WorkspaceAccess>}
     </Suspense></AccessProvider></ThemeProvider>
   </React.StrictMode>,
 );

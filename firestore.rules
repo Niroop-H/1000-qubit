@@ -7,6 +7,7 @@ service cloud.firestore {
     match /d25Subscriptions/{id} { allow read, write: if false; }
     match /d25Charges/{id} { allow read, write: if false; }
     match /d25WebhookEvents/{id} { allow read, write: if false; }
+    match /d25AdminAudit/{id} { allow read, write: if false; }
     // This rule is safe only in a DEDICATED D25 project; do not deploy these
     // rules to another app's shared Firestore without merging its permissions.
     match /{document=**} { allow read, write: if false; }

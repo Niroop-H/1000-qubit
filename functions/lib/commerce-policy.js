@@ -31,7 +31,7 @@ function safePeriodEndSeconds(subscription,nowMs){
 }
 function isEntitled(account,nowMs){
  return !!account&&Number.isFinite(account.paidThroughMs)&&
-  account.paidThroughMs>nowMs&&account.status!=="refunded"&&account.status!=="revoked";
+  account.paidThroughMs>nowMs&&!account.revokedAtMs&&account.status!=="refunded"&&account.status!=="revoked";
 }
 module.exports={PRICE_PAISE,CURRENCY,MAX_CYCLES,verifyWebhook,verifyMonthlyPlan,
  isCapturedSubscriptionCharge,safePeriodEndSeconds,isEntitled};

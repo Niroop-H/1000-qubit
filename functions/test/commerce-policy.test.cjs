@@ -36,5 +36,6 @@ describe("D25 monthly recurring test commerce security rules",()=>{
   assert.equal(p.isEntitled({status:"pending",paidThroughMs:0},now),false);
   assert.equal(p.isEntitled({status:"refunded",paidThroughMs:now+1000},now),false);
   assert.equal(p.isEntitled({status:"cancelled",paidThroughMs:now+1000},now),true);
+  assert.equal(p.isEntitled({status:"active",paidThroughMs:now+1000,revokedAtMs:now},now),false);
  });
 });
