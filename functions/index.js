@@ -108,6 +108,17 @@ async function createSubscription(user){
  if(!verifyMonthlyPlan(verified,plan))throw error("Plan is not precisely ₹500 INR per month. Checkout blocked.",503);
  const ref=database.collection(ACCOUNT).doc(user.uid);
  const token=randomUUID(), at=now();
+ const previous=(await ref.get()).data();
+ // A user must not accidentally create overlapping monthly auto-debit mandates.
+ // Inspect the existing Razorpay subscription before permitting a new one.
+ if(/^sub_[A-Za-z0-9]+$/.test(previous?.subscriptionId||"")&&
+    !isEntitled(previous,at)&&
+    !(previous.status==="pending"&&isCheckoutUrl(previous.checkoutUrl)&&
+      at-(previous.subscriptionCreatedAtMs||0)<30*86400000)){
+  const old=await razorpay("subscriptions/"+encodeURIComponent(previous.subscriptionId));
+  if(!["cancelled","completed","expired"].includes(old?.status))
+   throw error("A Razorpay subscription already exists. Restore or cancel it before creating another.",409);
+ }
  const lease=await database.runTransaction(async tx=>{
   const snap=await tx.get(ref);
   const data=snap.data()||{};
@@ -244,6 +255,10 @@ exports.d25RazorpayWebhook=onRequest({
   if(event==="payment.refunded"){
    const paymentId=payment?.id;
    if(!/^pay_[A-Za-z0-9]+$/.test(paymentId||""))return json(res,400,{error:"payment_id_missing"});
+   // Partial refunds are not treated as full license revocation; a full
+   // verified payment.refunded event marks that paid period as refunded.
+   if(payment?.status!=="refunded"||payment.amount_refunded!==PRICE_PAISE)
+    return json(res,200,{received:true,ignored:true});
    const chargeRef=database.collection(CHARGE).doc(paymentId);
    const saved=await chargeRef.get();
    if(!saved.exists)return json(res,200,{received:true,ignored:true});
