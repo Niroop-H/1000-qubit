@@ -3,6 +3,17 @@ const assert=require("node:assert/strict");
 const {createHmac}=require("node:crypto");
 const p=require("../lib/commerce-policy.js");
 describe("D25 monthly recurring test commerce security rules",()=>{
+ it("locks ambiguous provider creation after lease timeout, preventing a second mandate",()=>{
+  const now=Date.UTC(2026,10,15);
+  assert.equal(p.checkoutLeaseGuard(null,now),"open");
+  assert.equal(p.checkoutLeaseGuard({status:"not_subscribed"},now),"open");
+  assert.equal(p.checkoutLeaseGuard({status:"creating",leaseUntilMs:now+1000},now),"busy");
+  assert.equal(p.checkoutLeaseGuard({status:"creating",leaseUntilMs:now},now),"review");
+  assert.equal(p.checkoutLeaseGuard({status:"creating",leaseUntilMs:now-1000},now),"review");
+  assert.equal(p.checkoutLeaseGuard({status:"creating"},now),"review");
+  assert.equal(p.checkoutLeaseGuard({status:"manual_review",requiresManualReconciliation:true},now),"review");
+  assert.equal(p.checkoutLeaseGuard({status:"not_subscribed",requiresManualReconciliation:false},now),"open");
+ });
  it("requires a real 500 INR per-month plan",()=>{
   const plan={id:"plan_AbC12345678901",period:"monthly",interval:1,item:{amount:50000,currency:"INR"}};
   assert.equal(p.verifyMonthlyPlan(plan,plan.id),true);

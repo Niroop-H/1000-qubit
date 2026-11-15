@@ -14,7 +14,7 @@ const {adminHandler}=require("./admin");
 const {randomUUID}=require("node:crypto");
 const {
  PRICE_PAISE,CURRENCY,MAX_CYCLES,verifyWebhook,verifyMonthlyPlan,
- isCapturedSubscriptionCharge,safePeriodEndSeconds,isEntitled
+ isCapturedSubscriptionCharge,safePeriodEndSeconds,isEntitled,checkoutLeaseGuard
 }=require("./lib/commerce-policy.js");
 if(!getApps().length) initializeApp();
 const database=getFirestore();
@@ -112,6 +112,10 @@ async function createSubscription(user){
  const ref=database.collection(ACCOUNT).doc(user.uid);
  const token=randomUUID(), at=now();
  const previous=(await ref.get()).data();
+ // An ambiguous previous provider creation must NEVER lead to a second mandate.
+ // Support must reconcile the Razorpay subscription before clearing the lock.
+ if(checkoutLeaseGuard(previous,at)==="review")
+  throw error("A previous subscription creation needs support reconciliation before retrying.",409);
  // A user must not accidentally create overlapping monthly auto-debit mandates.
  // Inspect the existing Razorpay subscription before permitting a new one.
  if(/^sub_[A-Za-z0-9]+$/.test(previous?.subscriptionId||"")&&
@@ -125,16 +129,17 @@ async function createSubscription(user){
  const lease=await database.runTransaction(async tx=>{
   const snap=await tx.get(ref);
   const data=snap.data()||{};
+  if(checkoutLeaseGuard(data,at)==="review")return {kind:"review"};
   if(isEntitled(data,at))return {kind:"active"};
   if(data.status==="pending"&&isCheckoutUrl(data.checkoutUrl)&&
     at-(data.subscriptionCreatedAtMs||0)<30*86400000)
    return {kind:"pending",checkoutUrl:data.checkoutUrl};
-  if(data.status==="creating"&&data.leaseUntilMs>at)
-   return {kind:"busy"};
+  if(checkoutLeaseGuard(data,at)==="busy")return {kind:"busy"};
   // One checkout in progress at a time, even on multiple function instances.
   tx.set(ref,{
    uid:user.uid,email:user.email,sku:"d25-monthly-user-v1",
    status:"creating",leaseToken:token,leaseUntilMs:at+90000,
+   requiresManualReconciliation:false,recoverySubscriptionId:null,
    lastCheckoutAttemptMs:at,paidThroughMs:Math.max(0,data.paidThroughMs||0),
    createdAtMs:data.createdAtMs||at,cancellationRequestedAtMs:null,
    provider:"razorpay-test"
@@ -142,6 +147,7 @@ async function createSubscription(user){
   return {kind:"reserved"};
  });
  if(lease.kind==="active")throw error("Account already has an active paid subscription.",409);
+ if(lease.kind==="review")throw error("Previous subscription attempt requires reconciliation by MAH Quantum support.",409);
  if(lease.kind==="busy")throw error("A checkout is already being prepared. Retry shortly.",409);
  if(lease.kind==="pending")return {checkoutUrl:lease.checkoutUrl,existing:true};
  let remote;
@@ -167,14 +173,45 @@ async function createSubscription(user){
   });
   return{checkoutUrl:remote.short_url,existing:false};
  }catch(e){
-  await database.runTransaction(async tx=>{
-   const s=await tx.get(ref);
-   if(s.data()?.leaseToken===token)
-    tx.set(ref,{status:"not_subscribed",leaseToken:null,leaseUntilMs:0},{merge:true});
-  }).catch(()=>{});
-  // If remote created but DB failed there may be an unactivated orphan; review
-  // Razorpay test subscriptions before retrying. Never silently grant access.
-  throw e;
+  // Provider creation and Firestore mapping are not one transaction. A timeout
+  // or response loss can leave an active mandate outside our account database.
+  // First check whether the mapping actually committed despite the error.
+  const remoteId=/^sub_[A-Za-z0-9]+$/.test(remote?.id||"")?remote.id:null;
+  if(remoteId){
+   try{
+    const [account,mapping]=await Promise.all([
+     ref.get(),database.collection(SUBS).doc(remoteId).get()
+    ]);
+    if(account.data()?.subscriptionId===remoteId&&mapping.data()?.uid===user.uid&&
+       isCheckoutUrl(remote.short_url))
+     return {checkoutUrl:remote.short_url,existing:true};
+   }catch{/* Fail closed; do not trust an unverified remote creation. */}
+  }
+  let cancelled=false;
+  if(remoteId){
+   try{
+    const cancelledRemote=await razorpay("subscriptions/"+encodeURIComponent(remoteId)+"/cancel",
+     "POST",{cancel_at_cycle_end:false});
+    cancelled=cancelledRemote?.id===remoteId&&cancelledRemote.status==="cancelled";
+   }catch{/* Leave the account locked if cancellation cannot be confirmed. */}
+  }
+  try{
+   await database.runTransaction(async tx=>{
+    const snapshot=await tx.get(ref);
+    if(snapshot.data()?.leaseToken!==token)return;
+    tx.set(ref,{
+     status:cancelled?"not_subscribed":"manual_review",
+     leaseToken:null,leaseUntilMs:0,
+     requiresManualReconciliation:!cancelled,
+     recoverySubscriptionId:cancelled?null:remoteId,
+     recoveryRecordedAtMs:now()
+    },{merge:true});
+   });
+  }catch{
+   // Preserve original error; if Firestore is down, the lease may expire.
+   // Reconciliation must happen before retry; do not claim cancellation.
+  }
+  throw error("Subscription setup was not confirmed. Contact MAH Quantum support before trying again.",503);
  }
 }
 async function cancelSubscription(user){

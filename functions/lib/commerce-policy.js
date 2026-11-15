@@ -29,9 +29,16 @@ function safePeriodEndSeconds(subscription,nowMs){
  // A paid monthly cycle should not extend access beyond 35 days from processing.
  return future>nowMs && future<=nowMs+35*86400000 ? s : 0;
 }
+/** An expired lease is ambiguous; do not issue a new Razorpay mandate. */
+function checkoutLeaseGuard(account,nowMs){
+ if(!account||typeof account!=="object")return "open";
+ if(account.requiresManualReconciliation===true)return "review";
+ if(account.status!=="creating")return "open";
+ return Number.isFinite(account.leaseUntilMs)&&account.leaseUntilMs>nowMs?"busy":"review";
+}
 function isEntitled(account,nowMs){
  return !!account&&Number.isFinite(account.paidThroughMs)&&
   account.paidThroughMs>nowMs&&!account.revokedAtMs&&account.status!=="refunded"&&account.status!=="revoked";
 }
 module.exports={PRICE_PAISE,CURRENCY,MAX_CYCLES,verifyWebhook,verifyMonthlyPlan,
- isCapturedSubscriptionCharge,safePeriodEndSeconds,isEntitled};
+ isCapturedSubscriptionCharge,safePeriodEndSeconds,isEntitled,checkoutLeaseGuard};
