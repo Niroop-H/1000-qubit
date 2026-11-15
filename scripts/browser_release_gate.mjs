@@ -36,6 +36,18 @@ async function main(){
    owner:null,heartbeat:0
   }));
  });
+ await test("D25 admin route loads but denies operation without configured Firebase/Google identity",async()=>{
+  const adminPage=await browser.newPage({viewport:{width:1280,height:800}});
+  try{
+   const response=await adminPage.goto(base+"/admin",{waitUntil:"domcontentloaded"});
+   assert.equal(response?.status(),200);
+   await adminPage.getByRole("heading",{name:/Administrator Console/i}).waitFor({timeout:15000});
+   const text=await adminPage.locator("main").innerText();
+   assert.match(text,/not deployed|not configured/i);
+   assert.equal(await adminPage.locator("table").count(),0);
+   return{route:"/admin",unauthenticatedDataTables:0,missingConfigFailsClosed:true};
+  }finally{await adminPage.close();}
+ });
  await test("Market landing identifies controlled access and links directly to 1000+ computation",async()=>{
   const response=await page.goto(base+"/",{waitUntil:"domcontentloaded"});
   assert.equal(response?.status(),200);
