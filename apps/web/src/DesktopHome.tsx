@@ -18,7 +18,7 @@ export default function DesktopHome() {
         <h1 id="d25-title">D25 <em>Quantum</em><br />Workspace</h1>
         <p className="d25-lead">A local-first scientific computing environment for quantum simulation, research experiments and reproducible study.</p>
         <div className="d25-primary-actions"><a className="d25-open" href="/studio">Open Quantum Studio <span aria-hidden="true">↗</span></a><a className="d25-secondary" href="/1000-plus">Enter 1000+ Research</a></div>
-        <div className="d25-facts"><span><b>20</b> shared execution launches</span><span><b>5h</b> cooldown after exhaustion</span><span><b>LOCAL</b> simulation</span></div>
+        <div className="d25-facts"><span><b>₹500</b> per user / month</span><span><b>20</b> shared execution launches</span><span><b>5h</b> cooldown after exhaustion</span><span><b>LOCAL</b> simulation</span></div>
       </section>
       <section aria-labelledby="d25-workspaces" className="d25-workspaces">
         <div className="d25-section-label"><span>YOUR LABORATORY</span><h2 id="d25-workspaces">Open a workspace</h2></div>

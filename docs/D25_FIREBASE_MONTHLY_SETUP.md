@@ -145,3 +145,7 @@ This is a real server/client code foundation but **has not been deployed**, test
 **Security architecture:** End users must never receive Razorpay secrets, Firebase Admin service account keys, payment webhook secrets, or a raw password list. Admin console user IDs are not equivalent to public license numbers. The Firebase/Auth user UID is an internal identifier; all payment access checks happen server side.
 
 Official references: [Firebase password authentication](https://firebase.google.com/docs/auth/web/password-auth), [Firebase Cloud Functions secrets](https://firebase.google.com/docs/functions/config-env), [Razorpay Subscriptions API](https://razorpay.com/docs/api/payments/subscriptions/), [Razorpay subscription webhooks](https://razorpay.com/docs/webhooks/subscriptions/), [Microsoft Store 10.8.6 policy](https://learn.microsoft.com/windows/apps/publish/store-policies).
+
+## First-launch visibility
+
+The branded desktop product homepage remains publicly viewable after installation. Selecting a computational workspace opens the Firebase account/subscription gate, which fails closed when Firebase configuration, payment verification or connectivity is unavailable. This is **not** a cryptographically secure executable-code boundary.

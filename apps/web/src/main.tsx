@@ -34,7 +34,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </div>
       }
     >
-      {desktop ? <D25AccountGate><Content /></D25AccountGate> : Content === Landing ? <Content /> : <WorkspaceAccess><Content /></WorkspaceAccess>}
+      {desktop ? Content === DesktopHome ? <Content /> : <D25AccountGate><Content /></D25AccountGate> : Content === Landing ? <Content /> : <WorkspaceAccess><Content /></WorkspaceAccess>}
     </Suspense></AccessProvider></ThemeProvider>
   </React.StrictMode>,
 );

@@ -45,6 +45,11 @@ jobs:
         run: |
           node --check functions/index.js
           node --test functions/test/*.test.cjs
+      - name: Resolve and audit Firebase Cloud Functions production dependencies
+        run: |
+          npm install --prefix functions --ignore-scripts --no-fund
+          npm audit --prefix functions --omit=dev --audit-level=high
+          node -e "require('./functions/index.js')"
       - name: Create D25 Windows icons
         run: npm run desktop:icons
       - name: Rust native quota regression tests
