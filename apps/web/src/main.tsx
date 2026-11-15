@@ -4,6 +4,7 @@ import "./index.css";
 import {ThemeProvider} from "./Theme";
 import "./themes.css";
 import WorkspaceAccess from "./WorkspaceAccess";
+import D25AccountGate from "./D25AccountGate";
 import {AccessProvider} from "./access/AccessProvider";
 const Landing = lazy(() => import("./Landing"));
 const DesktopHome = lazy(() => import("./DesktopHome"));
@@ -33,7 +34,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </div>
       }
     >
-      {Content === Landing || Content === DesktopHome ? <Content /> : <WorkspaceAccess><Content /></WorkspaceAccess>}
+      {desktop ? <D25AccountGate><Content /></D25AccountGate> : Content === Landing ? <Content /> : <WorkspaceAccess><Content /></WorkspaceAccess>}
     </Suspense></AccessProvider></ThemeProvider>
   </React.StrictMode>,
 );

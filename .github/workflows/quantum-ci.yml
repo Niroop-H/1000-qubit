@@ -18,6 +18,10 @@ jobs:
       - name: Audit production dependencies against npm advisories
         run: npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high
       - run: npm test
+      - name: Check Firebase recurring billing backend and policies
+        run: |
+          node --check functions/index.js
+          node --test functions/test/*.test.cjs
       - name: Check independent Python/TypeScript physics model parity
         run: node scripts/verify_physics_parity.mjs
       - run: npm run build:web

@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Dedicated D25 Firebase project: account/payment collections are managed
+    // by trusted Cloud Functions through the Admin SDK. Never by user clients.
+    match /d25Accounts/{uid} { allow read, write: if false; }
+    match /d25Subscriptions/{id} { allow read, write: if false; }
+    match /d25Charges/{id} { allow read, write: if false; }
+    match /d25WebhookEvents/{id} { allow read, write: if false; }
+    // This rule is safe only in a DEDICATED D25 project; do not deploy these
+    // rules to another app's shared Firestore without merging its permissions.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

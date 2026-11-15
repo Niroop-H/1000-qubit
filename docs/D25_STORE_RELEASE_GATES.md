@@ -73,4 +73,4 @@ Official Microsoft references: [Store distribution paths](https://learn.microsof
 
 ## Razorpay commercial entitlement proposal
 
-The proposed one-time **₹500 per named user** license is documented in [D25 Razorpay commerce architecture](D25_RAZORPAY_COMMERCE.md). Signature and payment-shape validators are present, but there is **no live checkout or license activation** yet. No customer payments should be accepted until verified purchase-to-account linking, durable entitlements, refund workflows and customer terms are operational. The current release remains **NO GO**.
+The revised plan is **₹500 per named user per month** (12 billing cycles). Firebase Auth email/password and Cloud Functions/Firestore Razorpay **TEST** subscriptions are staged; see [current implementation and setup](D25_FIREBASE_MONTHLY_SETUP.md). No Firebase project or Razorpay keys have been connected or deployed yet, so no real checkout or activation has been verified. No customer payments should be accepted until verified purchase-to-account linking, durable entitlements, refund workflows and customer terms are operational. The current release remains **NO GO**.

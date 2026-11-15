@@ -1,0 +1,29 @@
+.d25-auth-page{min-height:100vh;background:radial-gradient(ellipse at 85% 10%,#1b3049 0%,transparent 43%),#060c15;display:flex;justify-content:center;align-items:center;padding:36px 20px;color:#e9f0f5}
+.d25-auth-panel{width:min(100%,580px);padding:clamp(24px,5vw,48px);background:linear-gradient(140deg,#101c2c,#0b111b);border:1px solid #77603885;border-radius:22px;box-shadow:0 25px 85px #0008}
+.d25-auth-panel h1{font-size:clamp(34px,5vw,54px);line-height:1.12;letter-spacing:-1.7px;margin:19px 0;color:#fff}
+.d25-auth-panel h1 span{color:#eac17d}
+.d25-auth-eyebrow{font-size:11px;color:#f3c982;letter-spacing:2.1px;font-weight:800}
+.d25-auth-lead,.d25-auth-panel p{line-height:1.6;color:#c3d0dd}
+.d25-auth-form{display:grid;gap:17px;margin-top:25px}
+.d25-auth-form h2{color:#f3ce8d;font-size:21px;margin:0}
+.d25-auth-form label:not(.d25-auth-consent){display:grid;gap:7px;color:#f3f1eb;font-weight:600;font-size:13px}
+.d25-auth-form input:not([type=checkbox]){font:inherit;outline:none;background:#0b1423;border:1px solid #526475;border-radius:9px;color:#fff;padding:13px 14px}
+.d25-auth-form input:not([type=checkbox]):focus{border-color:#f0bb63;box-shadow:0 0 0 2px #e7bb5540}
+.d25-auth-tabs{display:flex;gap:12px;border-bottom:1px solid #3b4956;padding-bottom:11px}
+.d25-auth-tabs button,.d25-auth-link{font:inherit;background:none;border:0;color:#e9d0a6;cursor:pointer;text-align:left;padding:8px}
+.d25-auth-tabs button.active{font-weight:800;color:#fff;border-bottom:2px solid #e9c278}
+.d25-auth-primary{border:0;border-radius:9px;background:#e8ba73;color:#17202c;font-weight:800;font-size:15px;padding:13px 16px;cursor:pointer}
+.d25-auth-primary:hover{background:#f8d18f}.d25-auth-primary:disabled{opacity:.55;cursor:not-allowed}
+.d25-auth-note{font-size:12px;color:#adc0cf!important}
+.d25-auth-consent{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:#e0dfdc;line-height:1.55}
+.d25-auth-consent input{margin-top:5px;accent-color:#d3a860;min-width:18px;min-height:18px}
+.d25-subscription-price{font-size:35px;font-weight:800;color:#f4d192!important;margin:0}
+.d25-subscription-price small{font-size:13px;font-weight:500;color:#cfdee8}
+.d25-checkout-link{display:grid;gap:10px;padding:14px;border:1px solid #526775;border-radius:8px}
+.d25-checkout-link a{color:#f4cd82;font-weight:700;overflow-wrap:anywhere}
+.d25-auth-footer{font-size:11px;color:#8da3b8;margin-top:28px;padding-top:18px;border-top:1px solid #334657;line-height:1.6}
+.d25-auth-error{color:#ffb9ae!important;background:#441b243f;border:1px solid #c24e65;padding:12px;border-radius:8px}
+.d25-auth-notice{color:#d9f3d4!important}
+.d25-account-bar{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;background:#0d1c2b;color:#f1d5a0;padding:10px 22px;font-size:12px;border-bottom:1px solid #a7813c}
+.d25-account-bar button{background:#1d3349;color:#f7e2c0;border:1px solid #735f45;border-radius:6px;padding:7px 10px;cursor:pointer}
+.d25-license-notice{padding:8px 20px;background:#1e3546;color:#fbdaaa;font-size:13px}
