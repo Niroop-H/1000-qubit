@@ -80,7 +80,9 @@ async function requireVerifiedUser(req){
  const raw=req.headers.authorization;
  if(typeof raw!=="string"||!/^Bearer [A-Za-z0-9._-]{100,6000}$/.test(raw))
   throw error("Sign in with Firebase Authentication.",401);
- const claims=await getAuth().verifyIdToken(raw.slice(7));
+ let claims;
+ try{claims=await getAuth().verifyIdToken(raw.slice(7));}
+ catch{throw error("Firebase login token is invalid or expired. Sign in again.",401);}
  if(!claims.uid||!claims.email_verified)throw error("Verify your email address before subscribing.",403);
  return {uid:claims.uid,email:claims.email||""};
 }
