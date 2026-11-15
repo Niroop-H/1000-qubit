@@ -21,6 +21,6 @@
     "dev:desktop": "npm run dev:desktop --workspace=apps/web",
     "verify:commercial": "node scripts/verify-commercial-bundle.mjs",
     "desktop:build:connected": "node scripts/check-d25-release-config.mjs && npm run desktop:build",
-    "test:license": "node --test cloudflare/test/*.test.mjs"
+    "test:license": "node --experimental-sqlite --test cloudflare/test/*.test.mjs"
   }
 }

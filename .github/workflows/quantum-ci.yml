@@ -23,7 +23,7 @@ jobs:
           node --check cloudflare/src/worker.mjs
           node --check cloudflare/src/auth.mjs
           node --check cloudflare/src/razorpay.mjs
-          node --test cloudflare/test/*.test.mjs
+          node --experimental-sqlite --test cloudflare/test/*.test.mjs
       - name: Build and validate customer-local scientific desktop
         run: npm run build:desktop
       - name: Check independent Python/TypeScript physics model parity

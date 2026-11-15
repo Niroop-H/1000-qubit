@@ -53,7 +53,7 @@ jobs:
           node --check cloudflare/src/worker.mjs
           node --check cloudflare/src/auth.mjs
           node --check cloudflare/src/razorpay.mjs
-          node --test cloudflare/test/*.test.mjs
+          node --experimental-sqlite --test cloudflare/test/*.test.mjs
       - name: Create D25 Windows icons
         run: npm run desktop:icons
       - name: Rust native shell checks (no local license gate)
