@@ -14,7 +14,7 @@
 - The same **20 successful execution reservations**, then a **five-hour** cooldown. A rejected 21st reservation does not run the job. An eligible 20th reservation runs and starts the timer.
 - Existing browser access-code behavior is unchanged. Existing browser quotas and hosted industry API quotas are unchanged.
 
-**Important limitations:** Native quota files, device clocks and a local JavaScript simulation worker can be modified by a sufficiently capable user. This is an offline *usage policy*, not purchase/license enforcement, network-address rate limiting or tamper-proof DRM. A production sales platform needs a MAH-controlled license issuance and activation service (or signed offline entitlements) with documented customer terms. No customer account, payment processor, activation service, hardware driver or automatic updater is provided by this change.
+**Important limitations:** Native quota files, device clocks and a local JavaScript simulation worker can be modified by a sufficiently capable user. This is an offline *usage policy*, not purchase/license enforcement, network-address rate limiting or tamper-proof DRM. A production sales platform needs a MAH-controlled license issuance and activation service (or signed offline entitlements) with documented customer terms. A Firebase Authentication account gate and Razorpay **TEST** subscription backend are now staged in a separate directory, but have **not been deployed to a Firebase project** or verified against your merchant account. See [Firebase monthly setup](D25_FIREBASE_MONTHLY_SETUP.md). No live entitlement issuance, tamper-proof algorithm protection, hardware driver certification, or automatic updater is provided.
 
 ## Zero-cost Windows build requirements
 

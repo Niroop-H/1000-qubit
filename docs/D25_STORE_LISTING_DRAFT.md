@@ -4,6 +4,8 @@
 **Brand owner / parent company:** MAH Quantum  
 **Developed by:** Devashri S Industries, a division of MAH Quantum
 
+**Distribution proposal:** Free Microsoft Store download. After install, a secure third-party Razorpay subscription is **₹500 per user per month for up to 12 monthly billing cycles**; cancellation of future renewals is supported. The 20-run/five-hour execution allowance remains. Payments are TEST-only until merchant approval and final privacy/refund terms are configured. Do not submit this draft as a live sales listing.
+
 ## Short description
 
 A Windows scientific workspace for quantum circuit simulation, bounded large-circuit research and educational physics models.
