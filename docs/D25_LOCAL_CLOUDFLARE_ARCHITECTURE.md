@@ -69,7 +69,7 @@ The final gate is intentionally NO_GO until genuine payment and device acceptanc
 
 ## Cloudflare administration
 
-The browser-based Google admin screen uses VITE_D25_GOOGLE_CLIENT_ID, VITE_D25_FIREBASE_API_KEY and VITE_D25_ADMIN_API_BASE=https://d25-license.YOUR_SUBDOMAIN.workers.dev/v1/admin in its website configuration. Add that site's exact HTTPS origin to D25_ALLOWED_ORIGINS. The backend separately restricts administrators to explicitly verified Firebase UIDs in D25_ADMIN_GOOGLE_UIDS, plus a signed Google sign-in token. Never grant admin access by email string alone.
+The browser-based Google admin screen uses VITE_D25_GOOGLE_CLIENT_ID, VITE_D25_FIREBASE_API_KEY and VITE_D25_ADMIN_API_BASE=https://d25-license.YOUR_SUBDOMAIN.workers.dev/v1/admin in its website configuration. Add that site's exact HTTPS origin to D25_ALLOWED_ORIGINS. The backend separately restricts administrators to explicitly verified Firebase UIDs in D25_ADMIN_GOOGLE_UIDS, configured using a private Cloudflare secret prompt (npx wrangler secret put D25_ADMIN_GOOGLE_UIDS), plus a signed Google sign-in token. Never grant admin access by email string alone.
 
 D1 administration can view paid accounts, monthly collected payment and checkout-account charts, and disable D25 access, cancel renewals or revoke licenses with audit entries. It does NOT globally delete or disable Firebase Authentication identities. Firebase users who never logged in to the D25 licensing system are not listed.
 

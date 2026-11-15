@@ -37,10 +37,27 @@ function resourceStatus(env){
   quantumCompute:"customer-local",firebaseProjectConfigured:!!env.FIREBASE_PROJECT_ID,
   storageConfigured:!!env.DB,testSubscriptionsEnabled:razorpayEnabled(env)};
 }
+async function boundedBytes(req,maxBytes){
+ const declared=Number(req.headers.get("Content-Length")||0);
+ if(!Number.isFinite(declared)||declared<0||declared>maxBytes)throw fail(413,"request_too_large");
+ if(!req.body)return new Uint8Array();
+ const reader=req.body.getReader(),parts=[];
+ let size=0;
+ while(true){
+  const {value,done}=await reader.read();
+  if(done)break;
+  size+=value.byteLength;
+  if(size>maxBytes){await reader.cancel().catch(()=>{});throw fail(413,"request_too_large");}
+  parts.push(value);
+ }
+ const raw=new Uint8Array(size);
+ let offset=0;
+ for(const part of parts){raw.set(part,offset);offset+=part.byteLength;}
+ return raw;
+}
 async function jsonBody(req,maxBytes=2048){
  if(req.headers.get("Content-Type")?.split(";")[0]?.trim()!=="application/json")throw fail(415,"content_type_must_be_json");
- const str=await req.text();
- if(new TextEncoder().encode(str).length>maxBytes)throw fail(413,"request_too_large");
+ const str=new TextDecoder().decode(await boundedBytes(req,maxBytes));
  try{const data=JSON.parse(str);if(!data||typeof data!=="object"||Array.isArray(data))throw 0;return data;}
  catch{throw fail(400,"invalid_json");}
 }
@@ -185,7 +202,7 @@ async function reserve(req,env,now){
 
 async function webhook(req,env,now){
  if(!razorpayEnabled(env))throw fail(503,"test_payments_disabled");
- const bytes=new Uint8Array(await req.arrayBuffer());
+ const bytes=await boundedBytes(req,128*1024);
  if(!await validWebhook(bytes,req.headers.get("x-razorpay-signature"),env))
   throw fail(401,"invalid_razorpay_webhook_signature");
  const eventId=req.headers.get("x-razorpay-event-id");

@@ -12,7 +12,6 @@ FIREBASE_PROJECT_ID = "ds-quantum-267dd"
 D25_ENABLE_TEST_CHECKOUT = "false"
 RAZORPAY_TEST_PLAN_ID = ""
 D25_ALLOWED_ORIGINS = ""
-D25_ADMIN_GOOGLE_UIDS = ""
 
 [[d1_databases]]
 binding = "DB"
