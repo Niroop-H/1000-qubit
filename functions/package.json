@@ -4,10 +4,14 @@
   "version": "0.1.0",
   "description": "D25 Quantum Workspace Firebase Authentication and Razorpay recurring test subscriptions",
   "main": "index.js",
-  "engines": { "node": "22" },
-  "scripts": { "test": "node --test test/*.test.cjs" },
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.cjs"
+  },
   "dependencies": {
-    "firebase-admin": "^13.0.0",
-    "firebase-functions": "^6.0.0"
+    "firebase-admin": "^14.5.1",
+    "firebase-functions": "^7.4.0"
   }
 }
