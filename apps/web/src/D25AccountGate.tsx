@@ -52,7 +52,7 @@ export default function D25AccountGate({children}:{children:ReactNode}){
   const poll=()=>{void refreshAccount().catch(()=>{
    if(alive){setStatus(null);setError("Unable to verify your subscription. Retry when connected.");}
   });};
-  const timer=setInterval(poll,60000);
+  const timer=setInterval(poll,300000);
   const onVisible=()=>{if(document.visibilityState==="visible")poll();};
   document.addEventListener("visibilitychange",onVisible);
   return()=>{alive=false;clearInterval(timer);document.removeEventListener("visibilitychange",onVisible);};

@@ -82,3 +82,7 @@ This is not tamperproof DRM: a technically capable person with the local JavaScr
 Cloudflare Workers Free and D1 Free have traffic/storage/CPU limits, so there is no guarantee of zero operating costs at unlimited scale. Standard Razorpay transaction fees apply to real payments. Customers must not be billed until the paid-product flow, refunds, tax, support and privacy policies work reliably.
 
 **Release blockers:** Cloudflare deployment not performed, no real Razorpay test transaction verified, no actual paid activation or WACK test, real Microsoft Store publisher identity not configured, and source extraction risk unresolved.
+
+## Cloudflare Free request conservation
+
+The commercial desktop checks the displayed execution allowance every 2 minutes and subscription status every 5 minutes (plus window-visibility updates); every actual execution still makes its own fresh D1 license and quota reservation request. This avoids the earlier 5-second idle polling that would unnecessarily exhaust Cloudflare Workers Free daily request quotas. Longer display refresh intervals do not bypass server enforcement.

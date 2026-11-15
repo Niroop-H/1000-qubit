@@ -71,7 +71,7 @@ export function useExecutionBudget(){
     if(active){setDesktopBudget(null);setDesktopError("Cloudflare license authorization unavailable. Computations are blocked.");}
    });};
    poll();
-   const pollTimer=setInterval(poll,5000);
+   const pollTimer=setInterval(poll,120000);
    const clock=setInterval(()=>setNow(Date.now()),1000);
    return()=>{active=false;clearInterval(pollTimer);clearInterval(clock);};
   }
