@@ -16,6 +16,7 @@ export interface AccountStatus {
  schema:"D25-Account-Subscription/v1";
  uid:string;email:string;active:boolean;paidThroughMs:number;
  subscriptionStatus:string;cancellationRequested:boolean;
+ ownerAccess:boolean;billingMode:"test"|"live";checkoutEnabled:boolean;
  checkoutUrl:string|null;monthlyAmountPaise:number;maxCycles:number;
 }
 export function configured(){
@@ -23,7 +24,7 @@ export function configured(){
   /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9/_-]+\/?$/.test(rawBase);
 }
 function cfg(){
- if(!configured())throw Error("D25 Firebase test account service has not been configured.");
+ if(!configured())throw Error("D25 Firebase sign-in service has not been configured.");
  return firebaseKey!;
 }
 function apiBase(){cfg();return rawBase.replace(/\/$/,"");}
@@ -75,6 +76,46 @@ export async function signIn(email:string,password:string){
   expiresAtMs:Date.now()+Math.max(300,Number(out.expiresIn)||3600)*1000};
  return remember(await enrich(state));
 }
+const googleDesktopId=String(import.meta.env.VITE_D25_GOOGLE_DESKTOP_CLIENT_ID||"");
+const googleDesktopSecret=String(import.meta.env.VITE_D25_GOOGLE_DESKTOP_CLIENT_SECRET||"");
+type NativeBridge=Window&{__TAURI_INTERNALS__?:{invoke?:(command:string,args?:unknown)=>Promise<unknown>}};
+export function googleSignInReady(){
+ return !!googleDesktopId&&typeof (window as NativeBridge).__TAURI_INTERNALS__?.invoke==="function";
+}
+export async function signInWithGoogle():Promise<FirebaseSession>{
+ if(!configured())throw Error("D25 Firebase configuration is missing.");
+ if(!googleSignInReady())throw Error("Google Desktop OAuth client is not configured in this installer.");
+ const native=(window as NativeBridge).__TAURI_INTERNALS__?.invoke;
+ if(!native)throw Error("Native Windows Google sign-in bridge is unavailable.");
+ // The native command opens Google in the SYSTEM browser and completes
+ // PKCE against a random loopback port. Never ask users to paste tokens.
+ const googleToken=await native("d25_google_oauth",{
+  clientId:googleDesktopId,clientSecret:googleDesktopSecret||null
+ });
+ if(typeof googleToken!=="string"||googleToken.length<100)
+  throw Error("Google did not provide a valid identity credential.");
+ const out=await authRequest("signInWithIdp",{
+  postBody:new URLSearchParams({id_token:googleToken,providerId:"google.com"}).toString(),
+  requestUri:"http://localhost",returnSecureToken:true
+ });
+ const state:FirebaseSession={uid:String(out.localId||""),email:String(out.email||""),
+  emailVerified:out.emailVerified===true,idToken:String(out.idToken||""),
+  refreshToken:String(out.refreshToken||""),
+  expiresAtMs:Date.now()+Math.max(300,Number(out.expiresIn)||3600)*1000};
+ if(!state.uid||!state.idToken||!state.refreshToken)
+  throw Error("Firebase did not accept the Google credential.");
+ return remember(await enrich(state));
+}
+export async function openRazorpayCheckout(url:string):Promise<void>{
+ const parsed=new URL(url);
+ if(parsed.protocol!=="https:"||!["rzp.io","razorpay.com"].includes(parsed.hostname)||
+    !!parsed.username||!!parsed.password||parsed.port)
+  throw Error("Unexpected Razorpay payment URL.");
+ const native=(window as NativeBridge).__TAURI_INTERNALS__?.invoke;
+ if(!native)throw Error("Razorpay checkout must open from the Windows desktop app.");
+ await native("d25_open_checkout",{url});
+}
+
 export async function refreshSession(force=false):Promise<FirebaseSession|null>{
  const token=session?.refreshToken||(()=>{try{return sessionStorage.getItem(AUTH_KEY)}catch{return null}})();
  if(!token)return null;

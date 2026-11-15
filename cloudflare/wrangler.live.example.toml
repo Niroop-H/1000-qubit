@@ -1,0 +1,22 @@
+# D25 LIVE-mode template — DO NOT DEPLOY without merchant KYC, acceptance,
+# owner security review, and a separate brand-new D1 database.
+# Copy to cloudflare/wrangler.live.toml (gitignored) and fill in IDs manually.
+# DO NOT reuse d25-license TEST database or its Razorpay TEST plan.
+name = "d25-license-live"
+main = "src/worker.mjs"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+FIREBASE_PROJECT_ID = "ds-quantum-267dd"
+D25_BILLING_MODE = "live"
+D25_ENABLE_LIVE_CHECKOUT = "false"
+D25_CONFIRMED_LIVE_CHARGING = ""
+RAZORPAY_LIVE_PLAN_ID = ""
+D25_ALLOWED_ORIGINS = ""
+
+[[d1_databases]]
+binding = "DB"
+database_name = "d25-license-live"
+database_id = "REPLACE_WITH_NEW_LIVE_ONLY_D1_DATABASE_UUID"
+migrations_dir = "migrations"

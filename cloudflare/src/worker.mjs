@@ -8,12 +8,12 @@
 import {
  MONTHLY_PAISE,BILLING_CYCLES,LIMIT,COOLDOWN_MS,UUID,validUid,
  validProviderId,validCapturedCharge,validCheckoutUrl,validateStart,
- periodEndMs,activeAccount,subscriptionState,checkoutDecision,quotaStatements
+ periodEndMs,activeAccount,ownerAuthorized,subscriptionState,checkoutDecision,quotaStatements
 } from "./policy.mjs";
 import {firebaseIdentity} from "./auth.mjs";
 import {
- razorpayEnabled,razorpay,newTestSubscription,fetchTestSubscription,
- cancelTestSubscription,validWebhook
+ razorpayMode,paymentConfig,razorpayWebhookReady,razorpayCredentialsReady,razorpayEnabled,
+ newSubscription,fetchSubscription,cancelSubscription,validWebhook
 } from "./razorpay.mjs";
 
 const DB_ERRORS=new Set(["D1_ERROR","SQLITE_ERROR"]);
@@ -32,10 +32,19 @@ function originAllowed(request,env){
   throw fail(403,"origin_not_allowed");
  return origin;
 }
+async function verifyDatabaseMode(env){
+ const row=await env.DB.prepare(
+  "SELECT mode FROM d25_runtime_environment WHERE id=1"
+ ).first();
+ if(!row||row.mode!==razorpayMode(env))
+  throw fail(503,"billing_database_mode_mismatch");
+}
 function resourceStatus(env){
- return {schema:"D25-License-Health/v1",mode:"test",
+ return {schema:"D25-License-Health/v1",mode:razorpayMode(env),
   quantumCompute:"customer-local",firebaseProjectConfigured:!!env.FIREBASE_PROJECT_ID,
-  storageConfigured:!!env.DB,testSubscriptionsEnabled:razorpayEnabled(env)};
+  storageConfigured:!!env.DB,
+  testSubscriptionsEnabled:razorpayMode(env)==="test"&&razorpayEnabled(env),
+  liveSubscriptionsEnabled:razorpayMode(env)==="live"&&razorpayEnabled(env)};
 }
 async function boundedBytes(req,maxBytes){
  const declared=Number(req.headers.get("Content-Length")||0);
@@ -80,14 +89,18 @@ async function accountFor(req,env,now){
 }
 async function status(req,env,now){
  const {user,account}=await accountFor(req,env,now);
- return{...subscriptionState(account,now),uid:user.uid,email:user.email,
-  provider:account.subscription_id?"razorpay-test":null};
+ const owner=ownerAuthorized(user,env,account);
+ return{...subscriptionState(account,now,{
+    owner,mode:razorpayMode(env),checkoutEnabled:razorpayEnabled(env)
+   }),uid:user.uid,email:user.email,
+  provider:account.subscription_id?"razorpay-"+razorpayMode(env):null};
 }
 async function checkout(req,env,now){
  const payload=await jsonBody(req);
  if(!validateStart(payload))throw fail(400,"confirm_500_inr_monthly_recurring_terms");
- if(!razorpayEnabled(env))throw fail(503,"razorpay_test_subscriptions_not_enabled");
  const {user,account}=await accountFor(req,env,now);
+ if(ownerAuthorized(user,env,account))throw fail(409,"owner_google_account_does_not_require_payment");
+ if(!razorpayEnabled(env))throw fail(503,"razorpay_subscriptions_not_configured");
  const state=checkoutDecision(account,now);
  if(state==="active")throw fail(409,"already_subscribed");
  if(state==="pending")return{schema:"D25-Checkout-Link/v1",checkoutUrl:account.checkout_url,existing:true};
@@ -95,7 +108,7 @@ async function checkout(req,env,now){
  // An earlier cancelled/expired customer may have a linked subscription;
  // ask Razorpay before creating a second mandate, even on a stale UI.
  if(validProviderId(account.subscription_id,"sub")){
-  const old=await fetchTestSubscription(env,account.subscription_id);
+  const old=await fetchSubscription(env,account.subscription_id);
   if(!["cancelled","expired","completed"].includes(old.status))
    throw fail(409,"existing_razorpay_subscription_must_be_resolved");
  }
@@ -107,13 +120,13 @@ async function checkout(req,env,now){
  if(!locked)throw fail(409,"subscription_creation_in_progress");
  let remote=null;
  try{
-  remote=await newTestSubscription(env,user.uid);
+  remote=await newSubscription(env,user.uid);
   // D1 batch is transactional; the subscription mapping and account update
   // must not commit separately. Both statements require the same lease token.
   const results=await env.DB.batch([
    env.DB.prepare("INSERT INTO d25_subscriptions(subscription_id,uid,plan_id,created_at_ms) "+
     "SELECT ?,uid,?,? FROM d25_accounts WHERE uid=? AND lease_token=?")
-    .bind(remote.id,env.RAZORPAY_TEST_PLAN_ID,now,user.uid,lease),
+    .bind(remote.id,paymentConfig(env).planId,now,user.uid,lease),
    env.DB.prepare("UPDATE d25_accounts SET subscription_id=?,checkout_url=?,status='pending',"+
     "lease_token=NULL,lease_until_ms=0,updated_at_ms=? WHERE uid=? AND lease_token=? RETURNING uid")
     .bind(remote.id,remote.checkoutUrl,Date.now(),user.uid,lease)
@@ -135,7 +148,7 @@ async function checkout(req,env,now){
   }
   let cancelled=false;
   if(remote?.id){
-   try{const c=await cancelTestSubscription(env,remote.id,false);
+   try{const c=await cancelSubscription(env,remote.id,false);
     cancelled=c.status==="cancelled";
    }catch{/* remain locked for manual review */}
   }
@@ -153,8 +166,8 @@ async function cancel(req,env,now){
  const {user,account}=await accountFor(req,env,now);
  if(!validProviderId(account.subscription_id,"sub"))throw fail(404,"no_subscribed_mandate");
  if(account.cancellation_requested_at_ms)return{schema:"D25-Cancellation/v1",scheduled:true};
- if(!razorpayEnabled(env))throw fail(503,"razorpay_test_subscriptions_not_enabled");
- const c=await cancelTestSubscription(env,account.subscription_id,true);
+ if(!razorpayCredentialsReady(env))throw fail(503,"razorpay_subscription_management_unavailable");
+ const c=await cancelSubscription(env,account.subscription_id,true);
  const updated=await env.DB.prepare("UPDATE d25_accounts SET cancellation_requested_at_ms=?,status='cancel_requested',"+
   "updated_at_ms=? WHERE uid=? AND subscription_id=?")
   .bind(now,now,user.uid,account.subscription_id).run();
@@ -163,7 +176,8 @@ async function cancel(req,env,now){
 }
 async function quotaStatus(req,env,now){
  const {user,account}=await accountFor(req,env,now);
- if(!activeAccount(account,now))throw fail(403,"active_subscription_required");
+ if(!ownerAuthorized(user,env,account)&&!activeAccount(account,now))
+  throw fail(403,"active_subscription_required");
  const quota=await env.DB.prepare("SELECT used,reset_at_ms FROM d25_quotas WHERE uid=?")
   .bind(user.uid).first();
  const renewed=!!quota&&quota.used===LIMIT&&quota.reset_at_ms<=now;
@@ -177,10 +191,11 @@ async function reserve(req,env,now){
  if(typeof payload.requestId!=="string"||!UUID.test(payload.requestId)||
   Object.keys(payload).length!==1)throw fail(400,"valid_unique_request_id_required");
  const {user,account}=await accountFor(req,env,now);
- if(!activeAccount(account,now))throw fail(403,"active_subscription_required");
+ const owner=ownerAuthorized(user,env,account);
+ if(!owner&&!activeAccount(account,now))throw fail(403,"active_subscription_required");
  try{
   const [q,reservation]=await env.DB.batch(quotaStatements(env.DB,{
-   uid:user.uid,requestId:payload.requestId,now
+   uid:user.uid,requestId:payload.requestId,now,ownerExempt:owner
   }));
   if(reservation.meta?.changes!==1){
    const st=await quotaStatus(req,env,Date.now());
@@ -201,7 +216,7 @@ async function reserve(req,env,now){
 }
 
 async function webhook(req,env,now){
- if(!razorpayEnabled(env))throw fail(503,"test_payments_disabled");
+ if(!razorpayWebhookReady(env))throw fail(503,"payment_webhook_secret_not_configured");
  const bytes=await boundedBytes(req,128*1024);
  if(!await validWebhook(bytes,req.headers.get("x-razorpay-signature"),env))
   throw fail(401,"invalid_razorpay_webhook_signature");
@@ -242,7 +257,7 @@ async function webhook(req,env,now){
  const mapping=await env.DB.prepare("SELECT uid,plan_id FROM d25_subscriptions WHERE subscription_id=?")
   .bind(sub.id).first();
  if(!mapping)throw fail(503,"subscription_mapping_not_ready");
- if(mapping.plan_id!==env.RAZORPAY_TEST_PLAN_ID||sub.plan_id!==mapping.plan_id)
+ if(mapping.plan_id!==paymentConfig(env).planId||sub.plan_id!==mapping.plan_id)
   throw fail(422,"subscription_plan_mismatch");
  if(type==="subscription.charged"){
   const payment=data?.payload?.payment?.entity;
@@ -368,8 +383,8 @@ async function adminAction(req,env,admin,now){
  if(!account)throw fail(404,"account_not_found");
  if(["cancelRenewal","revokeLicense"].includes(body.action)&&
   validProviderId(account.subscription_id,"sub")&&!account.cancellation_requested_at_ms){
-  if(!razorpayEnabled(env))throw fail(503,"test_provider_disabled");
-  await cancelTestSubscription(env,account.subscription_id,true);
+  if(!razorpayCredentialsReady(env))throw fail(503,"payment_provider_management_unavailable");
+  await cancelSubscription(env,account.subscription_id,true);
  }
  let sql,params;
  if(body.action==="disableUser"){sql="UPDATE d25_accounts SET disabled=1,updated_at_ms=? WHERE uid=?";params=[now,target];}
@@ -409,6 +424,7 @@ export default {
    if(path==="/v1/health"&&req.method==="GET")
     return json(200,resourceStatus(env),origin);
    if(!env.DB)throw fail(503,"d1_database_not_configured");
+   await verifyDatabaseMode(env);
    const now=Date.now();
    if(path==="/v1/webhook"&&req.method==="POST")
     return json(200,await webhook(req,env,now),origin);

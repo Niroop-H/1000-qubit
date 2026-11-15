@@ -1,3 +1,5 @@
+> **Updated plan (15 November 2026):** TEST and LIVE Razorpay support now use separate Workers and D1 databases. Exactly one Google-verified Firebase UID can be exempted from payment via Cloudflare secrets; customer simulation stays local. See [Owner Google and Razorpay setup](../docs/D25_RAZORPAY_OWNER_GOOGLE_SETUP.md). LIVE mode is OFF until merchant KYC and acceptance.
+
 # D25 Cloudflare Workers Free licensing service
 
 All quantum simulation stays on the customer's machine. This Worker handles Firebase Auth, ₹500 monthly Razorpay TEST payments, durable D1 entitlements, server-side launch quotas and Google-admin controls.

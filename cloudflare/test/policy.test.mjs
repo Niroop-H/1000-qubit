@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import {createHmac} from "node:crypto";
 import {
  MONTHLY_PAISE,validPlan,validCapturedCharge,periodEndMs,activeAccount,
- validateStart,checkoutDecision,quotaStatements,UUID,subscriptionState
+ validateStart,checkoutDecision,quotaStatements,UUID,subscriptionState,ownerAuthorized
 } from "../src/policy.mjs";
-import {validWebhook} from "../src/razorpay.mjs";
+import {validWebhook,razorpayMode,razorpayEnabled,razorpayCredentialsReady,paymentConfig} from "../src/razorpay.mjs";
 describe("D25 Cloudflare ₹500/month license rules",()=>{
  const now=Date.UTC(2026,10,15,12);
  it("requires a real ₹500 one-month Razorpay plan",()=>{
@@ -61,11 +61,52 @@ describe("D25 Cloudflare ₹500/month license rules",()=>{
   assert.equal(result[1].params[0],requestId);
   assert.throws(()=>quotaStatements(db,{uid:"user_abc",requestId:"bad",now}));
  });
+ it("exempts exactly one verified Google-owner UID without a payment record",()=>{
+  const user={uid:"admin_UID_123",email:"nirooph1@gmail.com",google:true,emailVerified:true};
+  const account={uid:user.uid,status:"not_subscribed",paid_until_ms:0,disabled:0,revoked:0,requires_review:0};
+  const env={D25_OWNER_GOOGLE_UID:user.uid,D25_OWNER_GOOGLE_EMAIL:user.email};
+  assert.equal(ownerAuthorized(user,env,account),true);
+  assert.equal(subscriptionState(account,now,{owner:true}).active,true);
+  assert.equal(subscriptionState(account,now,{owner:true}).ownerAccess,true);
+  assert.equal(subscriptionState(account,now,{owner:false}).active,false);
+  for(const bad of [
+   {...user,google:false},{...user,uid:"another_UID"},
+   {...user,email:"another@example.com"},{...user,emailVerified:false}
+  ])assert.equal(ownerAuthorized(bad,env,account),false);
+  assert.equal(ownerAuthorized(user,{...env,D25_OWNER_GOOGLE_UID:""},account),false);
+  assert.equal(ownerAuthorized(user,{...env,D25_OWNER_GOOGLE_EMAIL:""},account),false);
+  assert.equal(ownerAuthorized(user,env,{...account,disabled:1}),false);
+  assert.equal(ownerAuthorized(user,env,{...account,revoked:1}),false);
+ });
+ it("rejects LIVE checkout without separate live secrets and explicit merchant consent",()=>{
+  const env={D25_BILLING_MODE:"live",D25_ENABLE_LIVE_CHECKOUT:"true",
+   RAZORPAY_LIVE_KEY_ID:"rzp_live_abc123",
+   RAZORPAY_LIVE_KEY_SECRET:"testing-public-fixture-never-real",
+   RAZORPAY_LIVE_WEBHOOK_SECRET:"testing-public-webhook-fixture-123",
+   RAZORPAY_LIVE_PLAN_ID:"plan_AaBb1234"};
+  assert.equal(razorpayMode(env),"live");
+  assert.equal(paymentConfig(env).mode,"live");
+  assert.equal(razorpayCredentialsReady(env),true);
+  assert.equal(razorpayEnabled(env),false);
+  assert.equal(razorpayEnabled({...env,D25_CONFIRMED_LIVE_CHARGING:"I_CONFIRM_REAL_RECURRING_CHARGES"}),true);
+  assert.equal(razorpayEnabled({...env,D25_CONFIRMED_LIVE_CHARGING:"I_CONFIRM_REAL_RECURRING_CHARGES",
+   RAZORPAY_LIVE_KEY_ID:"rzp_test_abc123"}),false);
+ });
+ it("lets subscriptions be cancelled even when new checkouts are disabled",()=>{
+  const env={D25_BILLING_MODE:"test",D25_ENABLE_TEST_CHECKOUT:"false",
+   RAZORPAY_TEST_KEY_ID:"rzp_test_abc123",
+   RAZORPAY_TEST_KEY_SECRET:"testing-public-fixture-never-real",
+   RAZORPAY_TEST_WEBHOOK_SECRET:"testing-public-webhook-fixture-123",
+   RAZORPAY_TEST_PLAN_ID:"plan_AaBb1234"};
+  assert.equal(razorpayCredentialsReady(env),true);
+  assert.equal(razorpayEnabled(env),false);
+  assert.equal(razorpayEnabled({...env,D25_ENABLE_TEST_CHECKOUT:"true"}),true);
+ });
  it("verifies webhook signature on exact raw bytes",async()=>{
   const secret="not-a-real-razorpay-test-webhook-secret-123";
   const message=new TextEncoder().encode('{"event":"subscription.charged"}');
   const sig=createHmac("sha256",secret).update(message).digest("hex");
-  const env={RAZORPAY_TEST_WEBHOOK_SECRET:secret};
+  const env={RAZORPAY_TEST_WEBHOOK_SECRET:secret,RAZORPAY_TEST_PLAN_ID:"plan_AaBb1234"};
   assert.equal(await validWebhook(message,sig,env),true);
   assert.equal(await validWebhook(new TextEncoder().encode('{"event":"subscription.charged"} '),sig,env),false);
   assert.equal(await validWebhook(message,"1".repeat(64),env),false);

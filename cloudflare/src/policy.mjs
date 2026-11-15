@@ -45,15 +45,29 @@ export function validCheckoutUrl(value){
   return url.protocol==="https:"&&["rzp.io","razorpay.com","api.razorpay.com"].includes(url.hostname);
  }catch{return false;}
 }
-export function subscriptionState(account,now){
+/** Server-only Cloudflare secrets for BOTH Firebase UID and verified Google email.
+ * Email matching alone must never grant unlimited/owner access.
+ */
+export function ownerAuthorized(user,env,account){
+ const uid=String(env?.D25_OWNER_GOOGLE_UID||"").trim();
+ const email=String(env?.D25_OWNER_GOOGLE_EMAIL||"").trim().toLowerCase();
+ return validUid(uid)&&email.length>=6&&email.includes("@")&&
+  user?.uid===uid&&user?.google===true&&user?.emailVerified===true&&
+  String(user?.email||"").toLowerCase()===email&&
+  !!account&&!account.disabled&&!account.revoked&&!account.requires_review;
+}
+export function subscriptionState(account,now,{owner=false,mode="test",checkoutEnabled=false}={}){
  const paidThroughMs=Number(account?.paid_until_ms??0);
  return {
   schema:"D25-Account-Subscription/v1",
-  active:activeAccount(account,now),
+  active:!!owner||activeAccount(account,now),
+  ownerAccess:!!owner,
+  billingMode:mode==="live"?"live":"test",
+  checkoutEnabled:!!checkoutEnabled,
   paidThroughMs:Number.isSafeInteger(paidThroughMs)?paidThroughMs:0,
-  subscriptionStatus:String(account?.status??"not_subscribed"),
+  subscriptionStatus:owner?"owner_exempt":String(account?.status??"not_subscribed"),
   cancellationRequested:!!account?.cancellation_requested_at_ms,
-  checkoutUrl:account?.status==="pending"&&validCheckoutUrl(account?.checkout_url)?account.checkout_url:null,
+  checkoutUrl:!owner&&account?.status==="pending"&&validCheckoutUrl(account?.checkout_url)?account.checkout_url:null,
   monthlyAmountPaise:MONTHLY_PAISE,maxCycles:BILLING_CYCLES,currency:MONTHLY_CURRENCY
  };
 }
@@ -72,12 +86,12 @@ export function checkoutDecision(account,now){
  * If INSERT encounters same request ID, entire batch rolls back, so no double debit.
  * If UP-SERT was blocked by exhausted quota, second INSERT SELECT does nothing.
  */
-export function quotaStatements(db,{uid,requestId,now}){
+export function quotaStatements(db,{uid,requestId,now,ownerExempt=false}){
  if(!validUid(uid)||typeof requestId!=="string"||!UUID.test(requestId)||
     !Number.isSafeInteger(now)||now<1)throw Error("Invalid quota reservation.");
  const upsert=db.prepare(
   "INSERT INTO d25_quotas(uid,used,reset_at_ms,updated_at_ms,last_request_id) "+
-  "SELECT ?,1,0,?,? WHERE EXISTS(SELECT 1 FROM d25_accounts WHERE uid=? AND paid_until_ms>? "+
+  "SELECT ?,1,0,?,? WHERE EXISTS(SELECT 1 FROM d25_accounts WHERE uid=? AND (paid_until_ms>? OR ?=1) "+
   "AND revoked=0 AND refunded=0 AND disabled=0 AND requires_review=0) "+
   "ON CONFLICT(uid) DO UPDATE SET "+
   "used=CASE WHEN d25_quotas.used=20 AND d25_quotas.reset_at_ms<=? THEN 1 ELSE d25_quotas.used+1 END, "+
@@ -85,10 +99,10 @@ export function quotaStatements(db,{uid,requestId,now}){
   "WHEN d25_quotas.used=19 THEN ? ELSE d25_quotas.reset_at_ms END, "+
   "updated_at_ms=excluded.updated_at_ms,last_request_id=excluded.last_request_id "+
   "WHERE (d25_quotas.used<20 OR (d25_quotas.used=20 AND d25_quotas.reset_at_ms<=?)) "+
-  "AND EXISTS(SELECT 1 FROM d25_accounts WHERE uid=excluded.uid AND paid_until_ms>? "+
+  "AND EXISTS(SELECT 1 FROM d25_accounts WHERE uid=excluded.uid AND (paid_until_ms>? OR ?=1) "+
   "AND revoked=0 AND refunded=0 AND disabled=0 AND requires_review=0) "+
   "RETURNING used,reset_at_ms"
- ).bind(uid,now,requestId,uid,now,now,now,now+COOLDOWN_MS,now,now);
+ ).bind(uid,now,requestId,uid,now,ownerExempt?1:0,now,now,now+COOLDOWN_MS,now,now,ownerExempt?1:0);
  const insert=db.prepare(
   "INSERT INTO d25_reservations(request_id,uid,created_at_ms) "+
   "SELECT ?,?,? FROM d25_quotas WHERE uid=? AND last_request_id=?"

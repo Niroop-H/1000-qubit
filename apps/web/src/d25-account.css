@@ -27,3 +27,24 @@
 .d25-account-bar{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;background:#0d1c2b;color:#f1d5a0;padding:10px 22px;font-size:12px;border-bottom:1px solid #a7813c}
 .d25-account-bar button{background:#1d3349;color:#f7e2c0;border:1px solid #735f45;border-radius:6px;padding:7px 10px;cursor:pointer}
 .d25-license-notice{padding:8px 20px;background:#1e3546;color:#fbdaaa;font-size:13px}
+
+/* D25 recurring subscription interface: meaningful hierarchy and explicit billing mode */
+.d25-plan-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.d25-plan-heading h2{font-size:22px;margin:4px 0 0;color:#fff}
+.d25-plan-eyebrow{letter-spacing:1.6px;font-size:10px;font-weight:800;color:#a8c6e7}
+.d25-plan-mode{border:1px solid #9c824d;color:#f4d39e;padding:7px 9px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.6px;background:#ac8c4220}
+.d25-plan-mode-live{color:#a5f0d3;border-color:#329778;background:#1e655022}
+.d25-plan-features{display:grid;gap:11px;border:1px solid #50677b77;background:#080e1899;padding:17px;border-radius:12px}
+.d25-plan-features span{color:#e6edf3;font-size:13px;display:flex;align-items:center;gap:11px}
+.d25-plan-features span:before{content:"✓";font-size:13px;font-weight:900;color:#d4ac6d}
+.d25-plan-terms{font-size:12px;line-height:1.7;color:#c6d4e1}
+.d25-google-button{border:1px solid #9ca9ba88;border-radius:11px;background:#f3f6fb;color:#1d2837;font-size:15px;font-weight:700;padding:12px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+.d25-google-button:hover{background:#fff}
+.d25-google-button:disabled{opacity:.56;cursor:not-allowed}
+.d25-google-mark{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#fff;color:#4285f4;font-weight:900;font-size:19px}
+.d25-auth-google{display:grid;gap:10px;margin-top:8px;text-align:center}
+.d25-auth-google>span{color:#b9c7d8;font-size:12px}
+.d25-auth-google small{color:#f2c989;line-height:1.6}
+.d25-checkout-open{border:0;background:#ddb36e;color:#152235;padding:12px 15px;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer}
+.d25-checkout-open:hover{background:#f2ce8e}
+.d25-checkout-open:disabled{opacity:.5;cursor:not-allowed}

@@ -38,7 +38,12 @@ jobs:
     # D25_FIREBASE_WEB_API_KEY = the project's actual Firebase Web API key.
     env:
       VITE_D25_FIREBASE_API_KEY: ${{ vars.D25_FIREBASE_WEB_API_KEY }}
-      VITE_D25_API_BASE: https://d25-license.mahquantum.workers.dev/v1
+      # Can later point at a separately deployed LIVE Worker only after acceptance.
+      VITE_D25_API_BASE: ${{ vars.D25_LICENSE_API_URL || 'https://d25-license.mahquantum.workers.dev/v1' }}
+      # Google Desktop OAuth client ID is PUBLIC; do not use the Firebase Web client ID.
+      VITE_D25_GOOGLE_DESKTOP_CLIENT_ID: ${{ vars.D25_GOOGLE_DESKTOP_CLIENT_ID }}
+      # Installed-app OAuth client secrets cannot be kept private; optional.
+      VITE_D25_GOOGLE_DESKTOP_CLIENT_SECRET: ${{ vars.D25_GOOGLE_DESKTOP_CLIENT_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -61,6 +66,10 @@ jobs:
           node --check cloudflare/src/auth.mjs
           node --check cloudflare/src/razorpay.mjs
           node --experimental-sqlite --test cloudflare/test/*.test.mjs
+      - name: Confirm desktop native Google OAuth and payment-link helpers are present
+        run: |
+          node --check cloudflare/src/worker.mjs
+          node --check cloudflare/src/razorpay.mjs
       - name: Create D25 Windows icons
         run: npm run desktop:icons
       - name: Rust native shell checks (no local license gate)

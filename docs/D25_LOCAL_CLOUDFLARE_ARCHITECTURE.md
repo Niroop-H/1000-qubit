@@ -1,3 +1,5 @@
+> **Update (15 November 2026):** Google OAuth owner exemption, test payment UI and explicitly gated live Razorpay support are documented in [D25 owner Google + Razorpay](D25_RAZORPAY_OWNER_GOOGLE_SETUP.md). The original narrative below describes the initial TEST-only architecture and is not a live readiness claim.
+
 # D25 Quantum Workspace: local quantum engine + zero-upfront licensing
 
 **Date:** 15 November 2026. **Status:** DEVELOPMENT — NOT APPROVED FOR PAID MICROSOFT STORE RELEASE.

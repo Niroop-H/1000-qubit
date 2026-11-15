@@ -17,16 +17,17 @@ function setup(){
  const db=new DatabaseSync(":memory:");
  db.exec(readFileSync(resolve(root,"migrations/0001_d25_license.sql"),"utf8"));
  db.exec(readFileSync(resolve(root,"migrations/0002_refund_replay.sql"),"utf8"));
+ db.exec(readFileSync(resolve(root,"migrations/0003_billing_mode.sql"),"utf8"));
  db.prepare("INSERT INTO d25_accounts(uid,email,status,paid_until_ms,created_at_ms,updated_at_ms) "+
   "VALUES(?,?,?,?,?,?)").run("user_abc","test@example.invalid","active",NOW+5*86400000,NOW,NOW);
  return db;
 }
 let index=0;
 const uuid=()=>{const n=(++index).toString(16).padStart(12,"0");return "0b4d6161-4382-48d1-a123-"+n;};
-function reserve(db,now,requestId=uuid()){
+function reserve(db,now,requestId=uuid(),ownerExempt=false){
  const statements=quotaStatements({
   prepare(sql){return {sql,bind(...params){this.params=params;return this;}};}
- },{uid:"user_abc",requestId,now});
+ },{uid:"user_abc",requestId,now,ownerExempt});
  db.exec("BEGIN IMMEDIATE TRANSACTION");
  try{
   const updated=db.prepare(statements[0].sql).all(...statements[0].params);
@@ -72,6 +73,19 @@ describe("D25 D1 SQL transactional quota",()=>{
   const db=setup();
   db.prepare("UPDATE d25_accounts SET paid_until_ms=?").run(NOW-1);
   assert.equal(reserve(db,NOW).inserted.changes,0);
+  db.close();
+ });
+ it("accepts a verified server owner flag without making the account permanently paid",()=>{
+  const db=setup();
+  db.prepare("UPDATE d25_accounts SET paid_until_ms=0").run();
+  assert.equal(reserve(db,NOW).inserted.changes,0);
+  assert.equal(reserve(db,NOW+1,uuid(),true).inserted.changes,1);
+  assert.equal(db.prepare("SELECT paid_until_ms FROM d25_accounts WHERE uid='user_abc'").get().paid_until_ms,0);
+  db.close();
+ });
+ it("binds the deployed Worker to TEST-only D1 until an independent LIVE database is provisioned",()=>{
+  const db=setup();
+  assert.equal(db.prepare("SELECT mode FROM d25_runtime_environment WHERE id=1").get().mode,"test");
   db.close();
  });
 });

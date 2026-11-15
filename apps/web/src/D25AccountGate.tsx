@@ -1,7 +1,8 @@
 import {type FormEvent,type ReactNode,useCallback,useEffect,useState} from "react";
 import {
  billingRequest,clearSession,configured,createAccount,refreshSession,
- sendPasswordReset,sendVerificationEmail,signIn,
+ sendPasswordReset,sendVerificationEmail,signIn,signInWithGoogle,
+ googleSignInReady,openRazorpayCheckout,
  type FirebaseSession,type AccountStatus
 } from "./auth/d25Firebase";
 import "./d25-account.css";
@@ -21,10 +22,14 @@ export default function D25AccountGate({children}:{children:ReactNode}){
  const [notice,setNotice]=useState("");
  const [consent,setConsent]=useState(false);
  const [checkout,setCheckout]=useState("");
+ const live=status?.billingMode==="live";
+ const checkoutEnabled=status?.checkoutEnabled===true;
  const refreshAccount=useCallback(async()=>{
   const result=await billingRequest<AccountStatus>("GET","status");
   if(result.schema!=="D25-Account-Subscription/v1"||
-   typeof result.active!=="boolean"||!Number.isFinite(result.paidThroughMs))
+   typeof result.active!=="boolean"||typeof result.ownerAccess!=="boolean"||
+   !["test","live"].includes(result.billingMode)||typeof result.checkoutEnabled!=="boolean"||
+   !Number.isFinite(result.paidThroughMs))
    throw Error("The subscription service returned an invalid response.");
   setStatus(result);
   if(result.checkoutUrl)setCheckout(result.checkoutUrl);
@@ -74,6 +79,12 @@ export default function D25AccountGate({children}:{children:ReactNode}){
    else{setNotice("Check your inbox and verify your email, then select Check verification.");}
   });
  };
+ const googleLogin=()=>void task(async()=>{
+  const account=await signInWithGoogle();
+  setUser(account);setStatus(null);setPassword("");
+  await refreshAccount();
+  setNotice("Google identity verified with Firebase.");
+ });
  const checkVerification=()=>void task(async()=>{
   const updated=await refreshSession(true);
   if(!updated)throw Error("Your session expired. Sign in again.");
@@ -92,7 +103,7 @@ export default function D25AccountGate({children}:{children:ReactNode}){
     typeof created.checkoutUrl!=="string"||!created.checkoutUrl.startsWith("https://rzp.io/"))
    throw Error("A verified Razorpay subscription link was not provided.");
   setCheckout(created.checkoutUrl);
-  setNotice("Razorpay TEST subscription link prepared. Authorize in the external browser; then refresh access status.");
+  setNotice("Razorpay "+(live?"LIVE":"TEST")+" checkout link is ready. Complete authorization in the external browser, then refresh your license.");
  });
  const cancel=()=>void task(async()=>{
   if(!window.confirm("Stop future monthly renewals? Any paid access stays available through its recorded paid-through date."))return;
@@ -109,6 +120,10 @@ export default function D25AccountGate({children}:{children:ReactNode}){
  const resend=()=>void task(async()=>{
   await sendVerificationEmail();
   setNotice("Verification email requested. Follow the email link then return to this window.");
+ });
+ const openCheckout=()=>void task(async()=>{
+  if(!checkout)throw Error("No Razorpay link has been prepared.");
+  await openRazorpayCheckout(checkout);
  });
  const copyCheckout=()=>void task(async()=>{
   if(!checkout)throw Error("No checkout link is available.");
@@ -130,9 +145,9 @@ export default function D25AccountGate({children}:{children:ReactNode}){
   Checking Firebase session and subscription…</div></main>;
  if(user?.emailVerified&&status?.active)return <>
   <div className="d25-account-bar"><span><strong>D25 Quantum Workspace</strong> · Licensed to {user.email}
-   {status.paidThroughMs>0?" · Paid until "+new Date(status.paidThroughMs).toLocaleDateString():""}</span>
+   {status.ownerAccess?" · Google owner access (no subscription payment)":status.paidThroughMs>0?" · Paid until "+new Date(status.paidThroughMs).toLocaleDateString():""}</span>
    <button type="button" onClick={()=>void task(async()=>{await refreshAccount();setNotice("License refreshed.");})}>Refresh license</button>
-   {!status.cancellationRequested&&
+   {!status.ownerAccess&&!status.cancellationRequested&&
     <button type="button" onClick={cancel} disabled={working}>Cancel renewal</button>}
    <button type="button" onClick={logout}>Sign out</button></div>
   {notice&&<div className="d25-license-notice" role="status">{notice}</div>}
@@ -156,6 +171,13 @@ export default function D25AccountGate({children}:{children:ReactNode}){
     {working?"Processing…":mode==="signup"?"Create secure account":"Sign in"}
    </button>
    {mode==="signin"&&<button type="button" className="d25-auth-link" onClick={reset} disabled={working}>Reset password</button>}
+   <div className="d25-auth-google">
+    <span>Or use your verified Google account</span>
+    <button type="button" className="d25-google-button" disabled={working||!googleSignInReady()} onClick={googleLogin}>
+     <span className="d25-google-mark" aria-hidden="true">G</span> Continue with Google
+    </button>
+    {!googleSignInReady()&&<small>Google sign-in requires a Desktop OAuth Client ID in the connected Windows installer.</small>}
+   </div>
    <p className="d25-auth-note">Firebase Authentication manages your password securely. We never store plaintext passwords in Firestore.</p>
   </form>:!user.emailVerified?<div className="d25-auth-form">
    <h2>Verify your email</h2><p>We have not confirmed <strong>{user.email}</strong>. Complete the email-verification link from Firebase.</p>
@@ -163,21 +185,32 @@ export default function D25AccountGate({children}:{children:ReactNode}){
    <button type="button" className="d25-auth-link" disabled={working} onClick={resend}>Resend verification email</button>
    <button type="button" className="d25-auth-link" onClick={logout}>Use another account</button>
   </div>:<div className="d25-auth-form">
-   <h2>Secure monthly subscription</h2>
-   <p className="d25-subscription-price">₹500 <small>/ user / month</small></p>
-   <p>Recurring subscription: <strong>₹500 every month, for up to 12 billing cycles</strong>.
-   Renewals can be cancelled; paid access continues through its covered period.
-   Test payments do not collect real money.</p>
+   <div className="d25-plan-heading">
+     <div><span className="d25-plan-eyebrow">MAH QUANTUM / D25 LICENSE</span><h2>Quantum Workspace Pro</h2></div>
+     <span className={"d25-plan-mode "+(live?"d25-plan-mode-live":"")}>{live?"LIVE BILLING":"SANDBOX · NO REAL CHARGES"}</span>
+   </div>
+   <p className="d25-subscription-price">₹500 <small>INR / person / month</small></p>
+   <div className="d25-plan-features">
+    <span>Quantum Studio & 1,000+ research workspace</span>
+    <span>Scientific charts, devices and local simulation tools</span>
+    <span>20 execution launches, then 5-hour reset</span>
+    <span>Run computation on your own Windows PC</span>
+   </div>
+   <p className="d25-plan-terms"><strong>Recurring billing:</strong> ₹500 every month for a maximum of 12 billing cycles per mandate.
+   Payments are processed securely through Razorpay. You can cancel future renewals; paid access remains until its recorded expiry.</p>
+   {!live&&<p className="d25-auth-notice">TEST mode: no actual money is charged. Live subscriptions are not enabled until the merchant account is approved and verified.</p>}
    <p className="d25-auth-note">Account: {user.email} · Subscription: {status?.subscriptionStatus||"not yet active"}</p>
    {status&&status.paidThroughMs>0&&<p className="d25-auth-note">Previously paid through: {new Date(status.paidThroughMs).toLocaleDateString()}.</p>}
-   <label className="d25-auth-consent"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/>
-    <span>I authorize a Razorpay TEST subscription of ₹500 per month for up to 12 billing cycles, with the option to cancel future renewals.</span></label>
-   <button type="button" className="d25-auth-primary" disabled={working||!consent} onClick={startSubscription}>
-    {working?"Processing…":"Prepare Razorpay test subscription"}
+   {!checkoutEnabled&&<p className="d25-auth-error" role="status">Razorpay {live?"LIVE":"TEST"} subscriptions are not yet enabled for this deployment. No payment will be taken. Contact MAH Quantum support or retry later.</p>}
+   <label className="d25-auth-consent"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)} disabled={!checkoutEnabled}/>
+    <span>I explicitly authorize Razorpay {live?"LIVE":"TEST"} recurring billing of ₹500 every month, for at most 12 monthly cycles, and understand that I may cancel future renewals.</span></label>
+   <button type="button" className="d25-auth-primary" disabled={working||!consent||!checkoutEnabled} onClick={startSubscription}>
+    {working?"Preparing secure checkout…":checkout?"Resume subscription checkout":live?"Subscribe securely — ₹500/month":"Test subscription checkout — ₹500/month"}
    </button>
    {checkout&&<div className="d25-checkout-link">
-    <a href={checkout} target="_blank" rel="noopener noreferrer">Open Razorpay authorization link</a>
-    <button type="button" className="d25-auth-link" onClick={copyCheckout}>Copy external-browser link</button>
+    <strong>Razorpay secure checkout</strong>
+    <button type="button" className="d25-checkout-open" onClick={openCheckout} disabled={working}>Open checkout in your system browser</button>
+    <button type="button" className="d25-auth-link" onClick={copyCheckout}>Copy authorization link</button>
    </div>}
    <button type="button" className="d25-auth-link" disabled={working} onClick={()=>void task(refreshAccount)}>
     I have paid or authorized — check license

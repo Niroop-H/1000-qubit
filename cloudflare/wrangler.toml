@@ -9,6 +9,7 @@ workers_dev = true
 
 [vars]
 FIREBASE_PROJECT_ID = "ds-quantum-267dd"
+D25_BILLING_MODE = "test"
 D25_ENABLE_TEST_CHECKOUT = "false"
 RAZORPAY_TEST_PLAN_ID = ""
 D25_ALLOWED_ORIGINS = ""
