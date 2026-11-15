@@ -16,5 +16,5 @@ D25_ALLOWED_ORIGINS = ""
 [[d1_databases]]
 binding = "DB"
 database_name = "d25-license"
-database_id = "REPLACE_WITH_D1_DATABASE_UUID"
+database_id = "4f1ea5c8-42f6-401b-b652-7593b54304b4"
 migrations_dir = "migrations"
